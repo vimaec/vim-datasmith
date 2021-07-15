@@ -3,11 +3,12 @@
 #include <sys/stat.h>
 #include <string.h>
 #include <iostream>
+#include <stdio.h>
 
 namespace Utils
 {
 
-    const char* ReadFile(const std::string& fileName, uint32_t* size)
+    const char* ReadFile(const std::string& fileName, off_t* size)
     {
         std::cout << "Reading file: " << fileName << std::endl;
 
@@ -15,10 +16,10 @@ namespace Utils
         int rc = stat(fileName.c_str(), &stat_buf);
         if (rc == 0)
         {
-            int fileSize = stat_buf.st_size;
+            off_t fileSize = stat_buf.st_size;
 
             FILE* file;
-            fopen_s(&file, fileName.c_str(), "rb");
+			file = fopen(fileName.c_str(), "rb");
             if (file != nullptr)
             {
                 auto buffer = tracked_new char[fileSize + 1];

@@ -79,7 +79,7 @@ inline cQuat cQuat::Normalised() const
 	if (m > 0.0f) {
 		return *this / m;
 	} else {
-		cQuat(0.0f, 0.0f, 0.0f, 0.0f);
+		return cQuat(0.0f, 0.0f, 0.0f, 0.0f);
 	}
 }
 

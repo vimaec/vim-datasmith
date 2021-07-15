@@ -350,10 +350,10 @@ namespace bfast
 
         void write_file(string file) {
             auto data = pack();
-            FILE* f = nullptr;
-            if (fopen_s(&f, file.c_str(), "wb") != 0)
-                throw std::runtime_error("Failed to open file");
+            FILE* f = fopen(file.c_str(), "wb");
             if (f == nullptr)
+            {
+            }
                 return;
             fwrite(&data[0], 1, data.size(), f);
             fclose(f);

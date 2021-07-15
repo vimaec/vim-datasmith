@@ -1,0 +1,400 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		022F3654269CB96500623F93 /* DebugTools.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 022F3652269CB96500623F93 /* DebugTools.cpp */; };
+		0230D8E3269CA9F000EE9AD6 /* cMat.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0230D8CE269CA9F000EE9AD6 /* cMat.cpp */; };
+		0230D8E8269CA9F000EE9AD6 /* VimToDatasmith.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0230D8DF269CA9F000EE9AD6 /* VimToDatasmith.cpp */; };
+		0230D8E9269CA9F000EE9AD6 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0230D8E1269CA9F000EE9AD6 /* main.cpp */; };
+		02E14366269DCF1D00856873 /* CVimToDatasmith.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E14365269DCF1D00856873 /* CVimToDatasmith.cpp */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		020013F2269CA8DF00D6C8A5 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		020013F4269CA8DF00D6C8A5 /* VimToDatasmith */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = VimToDatasmith; sourceTree = BUILT_PRODUCTS_DIR; };
+		022F3652269CB96500623F93 /* DebugTools.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DebugTools.cpp; sourceTree = "<group>"; };
+		022F3653269CB96500623F93 /* DebugTools.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DebugTools.h; sourceTree = "<group>"; };
+		0230D8C3269CA9EF00EE9AD6 /* VimToDsWarningsDisabler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VimToDsWarningsDisabler.h; sourceTree = "<group>"; };
+		0230D8C4269CA9EF00EE9AD6 /* Vim-Datasmith.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Vim-Datasmith.xcconfig"; sourceTree = "<group>"; };
+		0230D8C5269CA9EF00EE9AD6 /* VimToDatasmith.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; path = VimToDatasmith.entitlements; sourceTree = "<group>"; };
+		0230D8C7269CA9F000EE9AD6 /* cVec.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cVec.h; sourceTree = "<group>"; };
+		0230D8C8269CA9F000EE9AD6 /* Utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Utils.h; sourceTree = "<group>"; };
+		0230D8CA269CA9F000EE9AD6 /* Utils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Utils.cpp; sourceTree = "<group>"; };
+		0230D8CB269CA9F000EE9AD6 /* cMat.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cMat.h; sourceTree = "<group>"; };
+		0230D8CD269CA9F000EE9AD6 /* cAABB.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cAABB.h; sourceTree = "<group>"; };
+		0230D8CE269CA9F000EE9AD6 /* cMat.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cMat.cpp; sourceTree = "<group>"; };
+		0230D8D0269CA9F000EE9AD6 /* cSphere.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cSphere.cpp; sourceTree = "<group>"; };
+		0230D8D1269CA9F000EE9AD6 /* Math.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Math.h; sourceTree = "<group>"; };
+		0230D8D2269CA9F000EE9AD6 /* cSphere.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cSphere.h; sourceTree = "<group>"; };
+		0230D8D3269CA9F000EE9AD6 /* cAABB.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cAABB.cpp; sourceTree = "<group>"; };
+		0230D8D5269CA9F000EE9AD6 /* cMat.inl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = cMat.inl; sourceTree = "<group>"; };
+		0230D8D7269CA9F000EE9AD6 /* g3d.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = g3d.h; sourceTree = "<group>"; };
+		0230D8D8269CA9F000EE9AD6 /* vim.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vim.h; sourceTree = "<group>"; };
+		0230D8D9269CA9F000EE9AD6 /* bfast.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = bfast.h; sourceTree = "<group>"; };
+		0230D8DF269CA9F000EE9AD6 /* VimToDatasmith.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VimToDatasmith.cpp; sourceTree = "<group>"; };
+		0230D8E0269CA9F000EE9AD6 /* VimToDatasmith.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VimToDatasmith.h; sourceTree = "<group>"; };
+		0230D8E1269CA9F000EE9AD6 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		02E14364269DCF1D00856873 /* CVimToDatasmith.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CVimToDatasmith.h; sourceTree = "<group>"; };
+		02E14365269DCF1D00856873 /* CVimToDatasmith.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CVimToDatasmith.cpp; sourceTree = "<group>"; };
+		02E14367269F054800856873 /* DatasmithSDK */ = {isa = PBXFileReference; lastKnownFileType = folder; name = DatasmithSDK; path = ../../../../MacDev/GitEpicGames/UE427/Engine/Binaries/Mac/DatasmithSDK; sourceTree = "<group>"; };
+		02F97EF126A0F76B0066F33D /* cQuat.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = cQuat.h; sourceTree = "<group>"; };
+		02F97EF226A0F76B0066F33D /* cQuat.inl */ = {isa = PBXFileReference; lastKnownFileType = text; path = cQuat.inl; sourceTree = "<group>"; };
+		02F97EF326A0F8AE0066F33D /* cEuler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = cEuler.h; sourceTree = "<group>"; };
+		02F97EF426A0F8D60066F33D /* cPlane.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = cPlane.h; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		020013F1269CA8DF00D6C8A5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		020013EB269CA8DF00D6C8A5 = {
+			isa = PBXGroup;
+			children = (
+				0230D8C6269CA9F000EE9AD6 /* reference */,
+				0230D8C2269CA9EF00EE9AD6 /* Settings */,
+				0230D8D6269CA9F000EE9AD6 /* Vim */,
+				0230D8DD269CA9F000EE9AD6 /* VimToDatasmith */,
+				020013F5269CA8DF00D6C8A5 /* Products */,
+				02E14367269F054800856873 /* DatasmithSDK */,
+			);
+			sourceTree = "<group>";
+		};
+		020013F5269CA8DF00D6C8A5 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				020013F4269CA8DF00D6C8A5 /* VimToDatasmith */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		0230D8C2269CA9EF00EE9AD6 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				0230D8C4269CA9EF00EE9AD6 /* Vim-Datasmith.xcconfig */,
+				0230D8C5269CA9EF00EE9AD6 /* VimToDatasmith.entitlements */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		0230D8C6269CA9F000EE9AD6 /* reference */ = {
+			isa = PBXGroup;
+			children = (
+				0230D8D3269CA9F000EE9AD6 /* cAABB.cpp */,
+				0230D8CD269CA9F000EE9AD6 /* cAABB.h */,
+				02F97EF326A0F8AE0066F33D /* cEuler.h */,
+				0230D8CE269CA9F000EE9AD6 /* cMat.cpp */,
+				0230D8CB269CA9F000EE9AD6 /* cMat.h */,
+				0230D8D5269CA9F000EE9AD6 /* cMat.inl */,
+				02F97EF426A0F8D60066F33D /* cPlane.h */,
+				02F97EF126A0F76B0066F33D /* cQuat.h */,
+				02F97EF226A0F76B0066F33D /* cQuat.inl */,
+				0230D8D0269CA9F000EE9AD6 /* cSphere.cpp */,
+				0230D8D2269CA9F000EE9AD6 /* cSphere.h */,
+				0230D8C7269CA9F000EE9AD6 /* cVec.h */,
+				0230D8D1269CA9F000EE9AD6 /* Math.h */,
+				0230D8CA269CA9F000EE9AD6 /* Utils.cpp */,
+				0230D8C8269CA9F000EE9AD6 /* Utils.h */,
+			);
+			path = reference;
+			sourceTree = "<group>";
+		};
+		0230D8D6269CA9F000EE9AD6 /* Vim */ = {
+			isa = PBXGroup;
+			children = (
+				0230D8D7269CA9F000EE9AD6 /* g3d.h */,
+				0230D8D8269CA9F000EE9AD6 /* vim.h */,
+				0230D8D9269CA9F000EE9AD6 /* bfast.h */,
+			);
+			name = Vim;
+			path = src;
+			sourceTree = "<group>";
+		};
+		0230D8DD269CA9F000EE9AD6 /* VimToDatasmith */ = {
+			isa = PBXGroup;
+			children = (
+				0230D8C3269CA9EF00EE9AD6 /* VimToDsWarningsDisabler.h */,
+				02E14365269DCF1D00856873 /* CVimToDatasmith.cpp */,
+				02E14364269DCF1D00856873 /* CVimToDatasmith.h */,
+				0230D8DF269CA9F000EE9AD6 /* VimToDatasmith.cpp */,
+				0230D8E0269CA9F000EE9AD6 /* VimToDatasmith.h */,
+				022F3652269CB96500623F93 /* DebugTools.cpp */,
+				022F3653269CB96500623F93 /* DebugTools.h */,
+				0230D8E1269CA9F000EE9AD6 /* main.cpp */,
+			);
+			path = VimToDatasmith;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		020013F3269CA8DF00D6C8A5 /* VimToDatasmith */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 020013FB269CA8DF00D6C8A5 /* Build configuration list for PBXNativeTarget "VimToDatasmith" */;
+			buildPhases = (
+				020013F0269CA8DF00D6C8A5 /* Sources */,
+				020013F1269CA8DF00D6C8A5 /* Frameworks */,
+				020013F2269CA8DF00D6C8A5 /* CopyFiles */,
+				0230D8EA269CAA6D00EE9AD6 /* Copy Datasmith Dylib */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = VimToDatasmith;
+			productName = VimToDatasmith;
+			productReference = 020013F4269CA8DF00D6C8A5 /* VimToDatasmith */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		020013EC269CA8DF00D6C8A5 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1250;
+				TargetAttributes = {
+					020013F3269CA8DF00D6C8A5 = {
+						CreatedOnToolsVersion = 12.5.1;
+					};
+				};
+			};
+			buildConfigurationList = 020013EF269CA8DF00D6C8A5 /* Build configuration list for PBXProject "VimToDatasmith" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 020013EB269CA8DF00D6C8A5;
+			productRefGroup = 020013F5269CA8DF00D6C8A5 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				020013F3269CA8DF00D6C8A5 /* VimToDatasmith */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		0230D8EA269CAA6D00EE9AD6 /* Copy Datasmith Dylib */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Copy Datasmith Dylib";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "rsync -u \"${DatasmithSDKFolder}/${DATASMITH_DYLIB}\" \"${TARGET_BUILD_DIR}\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		020013F0269CA8DF00D6C8A5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				022F3654269CB96500623F93 /* DebugTools.cpp in Sources */,
+				0230D8E3269CA9F000EE9AD6 /* cMat.cpp in Sources */,
+				0230D8E8269CA9F000EE9AD6 /* VimToDatasmith.cpp in Sources */,
+				02E14366269DCF1D00856873 /* CVimToDatasmith.cpp in Sources */,
+				0230D8E9269CA9F000EE9AD6 /* main.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		020013F9269CA8DF00D6C8A5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 0230D8C4269CA9EF00EE9AD6 /* Vim-Datasmith.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 11.2;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		020013FA269CA8DF00D6C8A5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 0230D8C4269CA9EF00EE9AD6 /* Vim-Datasmith.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 11.2;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		020013FC269CA8DF00D6C8A5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Settings/VimToDatasmith.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = ZT5AAMYP67;
+				ENABLE_HARDENED_RUNTIME = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+			};
+			name = Debug;
+		};
+		020013FD269CA8DF00D6C8A5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Settings/VimToDatasmith.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = ZT5AAMYP67;
+				ENABLE_HARDENED_RUNTIME = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		020013EF269CA8DF00D6C8A5 /* Build configuration list for PBXProject "VimToDatasmith" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				020013F9269CA8DF00D6C8A5 /* Debug */,
+				020013FA269CA8DF00D6C8A5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		020013FB269CA8DF00D6C8A5 /* Build configuration list for PBXNativeTarget "VimToDatasmith" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				020013FC269CA8DF00D6C8A5 /* Debug */,
+				020013FD269CA8DF00D6C8A5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 020013EC269CA8DF00D6C8A5 /* Project object */;
+}
