@@ -1,9 +1,5 @@
-//
-//  main.cpp
-//  VimToDatasmith
-//
-//  Created by Richard Young on 2021-05-17.
-//
+// Copyright (c) 2021 VIM
+// Licensed under the MIT License 1.0
 
 #include "VimToDatasmith.h"
 

@@ -1,9 +1,5 @@
-//
-//  VimToDatasmith.cpp
-//  VimToDatasmith
-//
-//  Created by Richard Young on 2021-05-17.
-//
+// Copyright (c) 2021 VIM
+// Licensed under the MIT License 1.0
 
 #include "VimToDatasmith.h"
 #include "CVimToDatasmith.h"
@@ -25,7 +21,7 @@ DISABLE_SDK_WARNINGS_END
 	#define DirectorySeparator '/'
 #endif
 
-BeginVim2DatasmithNameSpace
+namespace Vim2Ds {
 
 
 void Usage()
@@ -125,110 +121,4 @@ utf8_string ToString(const cAABB& inAxisAlignedBoundingBox)
 const float Meter2Centimeter = 100.0f;
 
 
-// Return true if this is an identity matrix
-bool IsIdentity(const cMat4& inTransform)
-{
-	return IsNearZero(inTransform.m16[0] - 1.0f) && IsNearZero(inTransform.m16[1]) && IsNearZero(inTransform.m16[2]) && IsNearZero(inTransform.m16[3]) &&
-	IsNearZero(inTransform.m16[4]) && IsNearZero(inTransform.m16[5] - 1.0f) && IsNearZero(inTransform.m16[6]) && IsNearZero(inTransform.m16[7]) &&
-	IsNearZero(inTransform.m16[8]) && IsNearZero(inTransform.m16[9]) && IsNearZero(inTransform.m16[10] - 1.0f) && IsNearZero(inTransform.m16[11]) &&
-	IsNearZero(inTransform.m16[12]) && IsNearZero(inTransform.m16[13]) && IsNearZero(inTransform.m16[14]) && IsNearZero(inTransform.m16[15] - 1.0f);
-}
-
-// Extract the rotation from the matrix and return as a Quat
-FQuat GetRotationQuat(const cMat4& inMatrix)
-{
-	double	RotAngle = 0.0;
-	cVec3	RotAxis;
-	if (IsNearZero(inMatrix.m01 - inMatrix.m10) &&
-		IsNearZero(inMatrix.m02 - inMatrix.m20) &&
-		IsNearZero(inMatrix.m12 - inMatrix.m21))
-	{
-		if (IsNearZero(inMatrix.m01 + inMatrix.m10, 0.1) &&
-			IsNearZero(inMatrix.m02 + inMatrix.m20, 0.1) &&
-			IsNearZero(inMatrix.m12 + inMatrix.m21, 0.1) &&
-			IsNearZero(inMatrix.m00 + inMatrix.m11 + inMatrix.m22 - 3, 0.1))
-		{
-			// no rotation
-			RotAngle = 0.0;
-		}
-		else
-		{ // 180 degrees rotation
-			RotAngle = PI;
-			const double xx = (inMatrix.m00 + 1.0) * 0.5;
-			const double yy = (inMatrix.m11 + 1.0) * 0.5;
-			const double zz = (inMatrix.m22 + 1.0) * 0.5;
-			const double xy = (inMatrix.m01 + inMatrix.m10) * 0.25;
-			const double xz = (inMatrix.m02 + inMatrix.m20) * 0.25;
-			const double yz = (inMatrix.m12 + inMatrix.m21) * 0.25;
-			
-			if ((xx > yy) && (xx > zz))
-			{
-				if (IsNearZero(xx))
-				{
-					RotAxis = cVec3(0.0f, 0.7071f, 0.7071f);
-				}
-				else
-				{
-					RotAxis[0] = sqrt(xx);
-					RotAxis[1] = xy / RotAxis[0];
-					RotAxis[2] = xz / RotAxis[0];
-				}
-			}
-			else if (yy > zz)
-			{
-				if (IsNearZero(yy))
-				{
-					RotAxis = cVec3(0.7071f, 0.0f, 0.7071f);
-				}
-				else
-				{
-					RotAxis[1] = sqrt(yy);
-					RotAxis[0] = xy / RotAxis[1];
-					RotAxis[2] = yz / RotAxis[1];
-				}
-			}
-			else
-			{
-				if (IsNearZero(zz))
-				{
-					RotAxis = cVec3(0.7071f, 0.7071f, 0.0f);
-				}
-				else
-				{
-					RotAxis[2] = sqrt(zz);
-					RotAxis[0] = xz / RotAxis[2];
-					RotAxis[1] = yz / RotAxis[2];
-				}
-			}
-		}
-	}
-	else
-	{
-		RotAngle = acos((inMatrix.m00 + inMatrix.m11 + inMatrix.m22 - 1.0) * 0.5);
-		RotAxis = cVec3((inMatrix.m21 - inMatrix.m12) / sqrt(sqr(inMatrix.m21 - inMatrix.m12) + sqr(inMatrix.m02 - inMatrix.m20) + sqr(inMatrix.m10 - inMatrix.m01)),
-						(inMatrix.m02 - inMatrix.m20) / sqrt(sqr(inMatrix.m21 - inMatrix.m12) + sqr(inMatrix.m02 - inMatrix.m20) + sqr(inMatrix.m10 - inMatrix.m01)),
-						(inMatrix.m10 - inMatrix.m01) / sqrt(sqr(inMatrix.m21 - inMatrix.m12) + sqr(inMatrix.m02 - inMatrix.m20) + sqr(inMatrix.m10 - inMatrix.m01)));
-	}
-	RotAxis.Normalise();
-	
-	return FQuat(FVector(RotAxis.x, -RotAxis.y, RotAxis.z), RotAngle).Inverse();
-}
-
-
-// Extract translation from the matrix and return an Unreal one (in centimeters)
-FVector GetTranslationVector(const cMat4& inMatrix)
-{
-	return FVector(inMatrix.m03 * Meter2Centimeter, -inMatrix.m13 * Meter2Centimeter, inMatrix.m23 * Meter2Centimeter);
-}
-
-
-// Extract scale from the matrix and return an Unreal one (in centimeters)
-FVector GetScaleVector(const cMat4& inMatrix)
-{
-	return FVector(sqrt(sqr(inMatrix.m00) + sqr(inMatrix.m10) + sqr(inMatrix.m20)),
-				   sqrt(sqr(inMatrix.m01) + sqr(inMatrix.m11) + sqr(inMatrix.m21)),
-				   sqrt(sqr(inMatrix.m02) + sqr(inMatrix.m12) + sqr(inMatrix.m22)));
-}
-
-
-EndVim2DatasmithNameSpace
+} // namespace Vim2Dsc

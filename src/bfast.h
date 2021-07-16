@@ -350,12 +350,19 @@ namespace bfast
 
         void write_file(string file) {
             auto data = pack();
-            FILE* f = fopen(file.c_str(), "wb");
+#ifndef __clang__
+			FILE* f = nullptr;
+            if (fopen_s(&f, file.c_str(), "wb") != 0)
+                throw std::runtime_error("Failed to open file");
             if (f == nullptr)
-            {
-            }
                 return;
-            fwrite(&data[0], 1, data.size(), f);
+#else
+			// On macOS fopen_s is unavailable
+			FILE* f = fopen(file.c_str(), "wb");
+			if (f == nullptr)
+				throw std::runtime_error("Failed to open file");
+#endif
+			fwrite(&data[0], 1, data.size(), f);
             fclose(f);
         }
 

@@ -17,10 +17,10 @@ DISABLE_SDK_WARNINGS_START
 DISABLE_SDK_WARNINGS_END
 
 
-BeginVim2DatasmithNameSpace
+namespace Vim2Ds {
 
 
-#define UseDatasmithHierarchicalInstanced 0 // IDatasmithHierarchicalInstancedStaticMeshActorElement currently not supported by Tm
+#define UseDatasmithHierarchicalInstance 0 // IDatasmithHierarchicalInstancedStaticMeshActorElement currently not supported by Tm
 
 
 // Basic vector class
@@ -68,7 +68,7 @@ public:
 };
 
 
-// Vector taht allocate it's content
+// Vector that allocate it's content
 template<class C>
 class TAllocatedVector : public TVector< C >
 {
@@ -197,4 +197,4 @@ private:
 };
 
 
-EndVim2DatasmithNameSpace
+} // namespace Vim2Dsc

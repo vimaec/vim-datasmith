@@ -1,16 +1,10 @@
-//
-//  VimToDatasmith.h
-//  VimToDatasmith
-//
-//  Created by Richard Young on 2021-05-17.
-//
+// Copyright (c) 2021 VIM
+// Licensed under the MIT License 1.0
 
 #pragma once
 
 #include "VimToDsWarningsDisabler.h"
 
-#define BeginVim2DatasmithNameSpace namespace Vim2Ds {
-#define EndVim2DatasmithNameSpace }
 
 #include <string>
 #include <cmath>
@@ -24,7 +18,7 @@ class cAABB;
 class FQuat;
 class FVector;
 
-BeginVim2DatasmithNameSpace
+namespace Vim2Ds {
 
 
 // All code is utf8 based
@@ -80,17 +74,4 @@ inline float sqr(float inValue) {
 // To convert from Vim meters to UE centimeter units
 extern const float Meter2Centimeter;
 
-// Return true if this is an identity matrix
-bool IsIdentity(const cMat4& inTransform);
-
-// Extract the rotation from the matrix and return as a Quat
-FQuat GetRotationQuat(const cMat4& inTransform);
-
-// Extract translation from the matrix and return an Unreal one (in centimeters)
-FVector GetTranslationVector(const cMat4& inTransform);
-
-// Extract scale from the matrix and return an Unreal one (in centimeters)
-FVector GetScaleVector(const cMat4& inMatrix);
-
-
-EndVim2DatasmithNameSpace
+} // namespace Vim2Dsc

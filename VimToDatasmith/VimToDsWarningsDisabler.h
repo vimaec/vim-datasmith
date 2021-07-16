@@ -1,7 +1,5 @@
-// VIM to Datasmith file converter
-// Copyright 2021, VIMaec LLC
-// Copyright 2021, Ara 3D, Inc.
-// Usage licensed under terms of MIT Licenese.
+// Copyright (c) 2021 VIM
+// Licensed under the MIT License 1.0
 
 #pragma once
 

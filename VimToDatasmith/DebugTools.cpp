@@ -1,9 +1,5 @@
-//
-//  DebugTools.cpp
-//  VimToDatasmith
-//
-//  Created by Richard Young on 2021-05-17.
-//
+// Copyright (c) 2021 VIM
+// Licensed under the MIT License 1.0
 
 #include "DebugTools.h"
 
@@ -17,7 +13,7 @@
 #endif
 
 
-BeginVim2DatasmithNameSpace
+namespace Vim2Ds {
 
 
 // Print in a string using the format and arguments list
@@ -171,4 +167,4 @@ void Printf2DB(EP2DB InMsgLevel, const utf8_t* FormatString, ...)
 }
 
 
-EndVim2DatasmithNameSpace
+} // namespace Vim2Dsc

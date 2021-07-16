@@ -1,15 +1,11 @@
-//
-//  DebugTools.h
-//  VimToDatasmith
-//
-//  Created by Richard Young on 2021-05-17.
-//
+// Copyright (c) 2021 VIM
+// Licensed under the MIT License 1.0
 
 #pragma once
 
 #include "VimToDatasmith.h"
 
-BeginVim2DatasmithNameSpace
+namespace Vim2Ds {
 
 #ifndef __clang__
 	#define __printflike(a, b)
@@ -86,4 +82,4 @@ void Write2Log(EP2DB InMsgLevel, const utf8_string& InMsg);
 #endif
 
 
-EndVim2DatasmithNameSpace
+} // namespace Vim2Dsc

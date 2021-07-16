@@ -1,9 +1,5 @@
-//
-//  main.cpp
-//  VimToDatasmith
-//
-//  Created by Richard Young on 2021-05-17.
-//
+// Copyright (c) 2021 VIM
+// Licensed under the MIT License 1.0
 
 #include "CVimToDatasmith.h"
 
@@ -22,7 +18,7 @@ DISABLE_SDK_WARNINGS_END
 #include <iostream>
 
 
-BeginVim2DatasmithNameSpace
+namespace Vim2Ds {
 
 
 enum ESpecialValues {
@@ -271,17 +267,17 @@ TSharedPtr<IDatasmithMeshElement> CVimToDatasmith::CreateDatasmithMesh(int32 geo
 void CVimToDatasmith::FixOldVimFileTransforms()
 {
 	if (mVimScene.mVersionMajor == 0 && mVimScene.mVersionMinor == 0 && mVimScene.mVersionPatch <= 200) {
-		std::vector<bool>	IsTransformed(mGroupVertexOffets.Count(), false);
+		std::vector<bool>	isTransformed(mGroupVertexOffets.Count(), false);
 		
 		for (size_t nodeIndex = 0; nodeIndex < mVimScene.mNodes.size(); ++nodeIndex)
 		{
 			const Vim::SceneNode& node = mVimScene.mNodes[nodeIndex];
 			if (node.mGeometry != kNoGeometry)
 			{
-				TestAssert(node.mGeometry < (int)IsTransformed.size());
-				if (!IsTransformed[node.mGeometry])
+				TestAssert(node.mGeometry < (int)isTransformed.size());
+				if (!isTransformed[node.mGeometry])
 				{
-					IsTransformed[node.mGeometry] = true;
+					isTransformed[node.mGeometry] = true;
 					TestAssert(node.mInstance == nodeIndex || node.mInstance == kNoInstance);
 					
 					cMat4 trans = (*(cMat4*)node.mTransform);
@@ -405,15 +401,16 @@ void CVimToDatasmith::ProcessInstances()
 				mDatasmithScene->AddActor(meshActor);
 
 				const cMat4& nodeTrans = *reinterpret_cast<const cMat4*>(node.mTransform);
-				cMat4 trans = nodeTrans.Transposed();
 
-				FQuat	rotation(GetRotationQuat(trans));
+				cQuat	quat;
+				quat.FromMat4(nodeTrans);
+				FQuat	rotation(-quat.mQuat.x, quat.mQuat.y, -quat.mQuat.z, -quat.mQuat.w);
 				meshActor->SetRotation(rotation, false);
 
-				FVector translation(GetTranslationVector(trans));
+				FVector translation(nodeTrans.m30 * Meter2Centimeter, -nodeTrans.m31 * Meter2Centimeter, nodeTrans.m32 * Meter2Centimeter);
 				meshActor->SetTranslation(translation, false);
 
-				FVector scale(GetScaleVector(trans));
+				FVector scale(nodeTrans.mRow0.Length(), nodeTrans.mRow1.Length(), nodeTrans.mRow2.Length());
 				meshActor->SetScale(scale, false);
 			}
 		}
@@ -507,4 +504,4 @@ void CVimToDatasmith::PrintStats()
 }
 
 
-EndVim2DatasmithNameSpace
+} // namespace Vim2Dsc

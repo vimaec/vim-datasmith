@@ -214,7 +214,7 @@ void cQuat::toMat3(cMat3 &mat) const
 }
 
 
-inline void cQuat::FromMat3(cMat3 &mat)
+inline void cQuat::FromMat3(const cMat3 &mat)
 {
 	// 	float trace = mat.m00 + mat.m11 + mat.m22;
 	// 	if( trace > 0 )
@@ -287,7 +287,7 @@ inline void cQuat::FromMat3(cMat3 &mat)
 	set(temp[3], temp[0], temp[1], temp[2]);
 }
 
-void cQuat::FromMat4 ( cMat4 &mat )
+void cQuat::FromMat4 ( const cMat4 &mat )
 {
 // 	float trace = mat.m00 + mat.m11 + mat.m22;
 // 	if( trace > 0 )

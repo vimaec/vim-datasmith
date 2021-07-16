@@ -61,8 +61,8 @@ public:
     __forceinline void            toSpherical( float &latitude, float &longitude ) const;
     __forceinline void            toMat4     ( cMat4 &mat ) const;
     __forceinline void            toMat3     ( cMat3 &mat ) const;
-    __forceinline void            FromMat3   ( cMat3 &mat );
-    inline void                   FromMat4   ( cMat4 &mat );
+    __forceinline void            FromMat3   ( const cMat3 &mat );
+    inline void                   FromMat4   ( const cMat4 &mat );
 
     __forceinline void            ToEulerXYZ    (cEuler &e                                    );
     __forceinline void            FromEulerXYZ(cEuler e);
