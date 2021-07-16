@@ -1,5 +1,5 @@
 #include "cAABB.h"
-#include "Utils/Utils.h"
+#include "Utils.h"
 
 
 cVec2 GetMinMax(float f0, float f1, float f2)

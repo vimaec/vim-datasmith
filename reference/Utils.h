@@ -1,8 +1,8 @@
 #ifndef __Utils_h__
 #define __Utils_h__
 
-#include "libEngine/Platform/Platform.h"
-#include <malloc.h>
+#include "Platform.h"
+#include <malloc/malloc.h>
 #include <vector>
 #include <string>
 #include <mutex>
@@ -98,7 +98,7 @@ namespace Utils
         return value - value % multiple; 
     }
 
-    extern const char* ReadFile(const std::string& fileName, uint32_t* size = nullptr);
+    extern const char* ReadFile(const std::string& fileName, off_t* size = nullptr);
 
 
     /*

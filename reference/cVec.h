@@ -2,7 +2,7 @@
 #define __CVEC_H__
 
 #include <math.h>
-#include "libEngine/Utils/Utils.h"
+#include "Utils.h"
 
 class cVec2Int;
 

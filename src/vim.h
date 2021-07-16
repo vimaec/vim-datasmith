@@ -240,14 +240,14 @@ namespace Vim
                 }
                 else if (b.name == "nodes")
                 {
-                    mNodes = std::move(std::vector<SceneNode>((SceneNode*)b.data.begin(), (SceneNode*)b.data.end()));
+                    mNodes = std::vector<SceneNode>((SceneNode*)b.data.begin(), (SceneNode*)b.data.end());
                 }
                 else if (b.name == "geometry")
                 {
                     try
                     {
                         mGeometryBFast = bfast::Bfast::unpack(b.data);
-                        mGeometry = std::move(g3d::G3d(mGeometryBFast));
+                        mGeometry = g3d::G3d(mGeometryBFast);
                     }
                     catch (std::exception& e)
                     {
