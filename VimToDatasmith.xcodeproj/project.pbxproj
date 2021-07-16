@@ -28,6 +28,8 @@
 
 /* Begin PBXFileReference section */
 		020013F4269CA8DF00D6C8A5 /* VimToDatasmith */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = VimToDatasmith; sourceTree = BUILT_PRODUCTS_DIR; };
+		02069DE626A1F8F2008861BA /* .clang-format */ = {isa = PBXFileReference; lastKnownFileType = text; path = ".clang-format"; sourceTree = "<group>"; };
+		02069DE726A1F925008861BA /* clangformat.command */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = clangformat.command; sourceTree = "<group>"; };
 		022F3652269CB96500623F93 /* DebugTools.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DebugTools.cpp; sourceTree = "<group>"; };
 		022F3653269CB96500623F93 /* DebugTools.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DebugTools.h; sourceTree = "<group>"; };
 		0230D8C3269CA9EF00EE9AD6 /* VimToDsWarningsDisabler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VimToDsWarningsDisabler.h; sourceTree = "<group>"; };
@@ -93,6 +95,8 @@
 		0230D8C2269CA9EF00EE9AD6 /* Settings */ = {
 			isa = PBXGroup;
 			children = (
+				02069DE626A1F8F2008861BA /* .clang-format */,
+				02069DE726A1F925008861BA /* clangformat.command */,
 				0230D8C4269CA9EF00EE9AD6 /* Vim-Datasmith.xcconfig */,
 				0230D8C5269CA9EF00EE9AD6 /* VimToDatasmith.entitlements */,
 			);
