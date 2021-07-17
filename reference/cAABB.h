@@ -5,6 +5,8 @@
 //#include "cRay.h"
 #include "cSphere.h"
 
+#include <float.h>
+
 class cAABB;
 
 

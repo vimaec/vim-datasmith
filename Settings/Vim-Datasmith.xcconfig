@@ -11,7 +11,7 @@ CLANG_CXX_LIBRARY = libc++
 GCC_C_LANGUAGE_STANDARD = gnu11
 CLANG_ENABLE_OBJC_ARC = NO
 
-USER_HEADER_SEARCH_PATHS = "./VimDatasmith" "./SceneLoader" "./vim" "./reference" "$DatasmithSDKFolder/Public/**" "$DatasmithSDKFolder/Private/**"
+USER_HEADER_SEARCH_PATHS = "./VimToDatasmith" "./src" "./reference" "$DatasmithSDKFolder/Public/**" "$DatasmithSDKFolder/Private/**"
 
 LIBRARY_SEARCH_PATHS = $(DatasmithSDKFolder)
 

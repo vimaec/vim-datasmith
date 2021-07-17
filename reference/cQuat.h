@@ -1,7 +1,7 @@
 #ifndef __CQUAT_H__
 #define __CQUAT_H__
 
-#include "Math.h"
+#include "math.h"
 #include "cVec.h"
 #include "cMat.h"
 #include "cEuler.h"
