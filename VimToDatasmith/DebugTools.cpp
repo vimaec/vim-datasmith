@@ -14,19 +14,12 @@ DISABLE_SDK_WARNINGS_END
 #include <cstdarg>
 #include <stdexcept>
 
-extern "C" { 
-    typedef unsigned long DWORD;
-    enum { FORMAT_MESSAGE_FROM_SYSTEM = 0x00001000, FORMAT_MESSAGE_IGNORE_INSERTS = 0x00000200 };
-    #define MAKELANGID(a, b) 1 << 10
-    extern void OutputDebugStringW(const wchar_t*);
-    extern DWORD FormatMessageW( 
-        DWORD   dwFlags,
-        const char* lpSource,
-        DWORD   dwMessageId,
-        DWORD   dwLanguageId,
-        wchar_t* lpBuffer,
-        DWORD   nSize,
-        va_list* Arguments);
+extern "C" {
+typedef unsigned long DWORD;
+enum { FORMAT_MESSAGE_FROM_SYSTEM = 0x00001000, FORMAT_MESSAGE_IGNORE_INSERTS = 0x00000200 };
+#define MAKELANGID(a, b) 1 << 10
+extern void OutputDebugStringW(const wchar_t *);
+extern DWORD FormatMessageW(DWORD dwFlags, const char *lpSource, DWORD dwMessageId, DWORD dwLanguageId, wchar_t *lpBuffer, DWORD nSize, va_list *Arguments);
 }
 
 namespace Vim2Ds {
@@ -128,7 +121,6 @@ void ThrowWinError(unsigned long InWinErr, const utf8_t *InFile, int InLineNo) {
 void Write2Log(EP2DB /*InMsgLevel*/, const utf8_string & /*InMsg*/) {
 }
 
-
 // Print to debugger
 void Printf2DB(EP2DB InMsgLevel, const utf8_t *FormatString, ...) {
     try {
@@ -142,8 +134,7 @@ void Printf2DB(EP2DB InMsgLevel, const utf8_t *FormatString, ...) {
         OutputDebugStringW(WStr.c_str());
         if (InMsgLevel == kP2DB_Debug) {
             fputws(WStr.c_str(), stderr);
-        }
-        else if (InMsgLevel <= kP2DB_Trace) {
+        } else if (InMsgLevel <= kP2DB_Trace) {
             fputws(WStr.c_str(), stdout);
         }
 #else

@@ -6,8 +6,8 @@
 #include "DebugTools.h"
 #include "VimToDatasmith.h"
 
-#include "cQuat.h"
 #include "cAABB.h"
+#include "cQuat.h"
 
 DISABLE_SDK_WARNINGS_START
 
