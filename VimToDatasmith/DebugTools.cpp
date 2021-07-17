@@ -140,6 +140,12 @@ void Printf2DB(EP2DB InMsgLevel, const utf8_t *FormatString, ...) {
 #if PLATFORM_WINDOWS
         std::wstring WStr(UTF8_TO_TCHAR(FormattedMessage.c_str()));
         OutputDebugStringW(WStr.c_str());
+        if (InMsgLevel == kP2DB_Debug) {
+            fputws(WStr.c_str(), stderr);
+        }
+        else if (InMsgLevel <= kP2DB_Trace) {
+            fputws(WStr.c_str(), stdout);
+        }
 #else
         if (fwrite(FormattedMessage.c_str(), 1, FormattedMessage.size(), stdout) != FormattedMessage.size()) {
             printf("Printf2DB - Write error %d\n", errno);
