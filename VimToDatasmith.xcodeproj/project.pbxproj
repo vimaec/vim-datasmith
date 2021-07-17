@@ -42,7 +42,7 @@
 		0230D8CD269CA9F000EE9AD6 /* cAABB.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cAABB.h; sourceTree = "<group>"; };
 		0230D8CE269CA9F000EE9AD6 /* cMat.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cMat.cpp; sourceTree = "<group>"; };
 		0230D8D0269CA9F000EE9AD6 /* cSphere.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cSphere.cpp; sourceTree = "<group>"; };
-		0230D8D1269CA9F000EE9AD6 /* Math.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Math.h; sourceTree = "<group>"; };
+		0230D8D1269CA9F000EE9AD6 /* MathConst.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MathConst.h; sourceTree = "<group>"; };
 		0230D8D2269CA9F000EE9AD6 /* cSphere.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cSphere.h; sourceTree = "<group>"; };
 		0230D8D3269CA9F000EE9AD6 /* cAABB.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cAABB.cpp; sourceTree = "<group>"; };
 		0230D8D5269CA9F000EE9AD6 /* cMat.inl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = cMat.inl; sourceTree = "<group>"; };
@@ -118,7 +118,7 @@
 				0230D8D0269CA9F000EE9AD6 /* cSphere.cpp */,
 				0230D8D2269CA9F000EE9AD6 /* cSphere.h */,
 				0230D8C7269CA9F000EE9AD6 /* cVec.h */,
-				0230D8D1269CA9F000EE9AD6 /* Math.h */,
+				0230D8D1269CA9F000EE9AD6 /* MathConst.h */,
 				0230D8CA269CA9F000EE9AD6 /* Utils.cpp */,
 				0230D8C8269CA9F000EE9AD6 /* Utils.h */,
 			);
