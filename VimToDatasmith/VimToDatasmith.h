@@ -13,8 +13,6 @@ class cVec4;
 class cMat4;
 class ubyte4;
 class cAABB;
-class FQuat;
-class FVector;
 
 namespace Vim2Ds {
 

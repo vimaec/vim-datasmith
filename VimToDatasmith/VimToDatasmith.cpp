@@ -6,16 +6,13 @@
 
 #include "DebugTools.h"
 
-#include "cMat.h"
-#include "cVec.h"
-
 DISABLE_SDK_WARNINGS_START
 
 #include "DatasmithExporterManager.h"
 
 DISABLE_SDK_WARNINGS_END
 
-#if Windows
+#if winOS
 #define DirectorySeparator '\\'
 #else
 #define DirectorySeparator '/'

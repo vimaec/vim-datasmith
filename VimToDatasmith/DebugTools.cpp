@@ -7,9 +7,27 @@
 
 #if PLATFORM_WINDOWS
 DISABLE_SDK_WARNINGS_START
-#include "StringConv.h"
+#include "Containers/StringConv.h"
 DISABLE_SDK_WARNINGS_END
 #endif
+
+#include <cstdarg>
+#include <stdexcept>
+
+extern "C" { 
+    typedef unsigned long DWORD;
+    enum { FORMAT_MESSAGE_FROM_SYSTEM = 0x00001000, FORMAT_MESSAGE_IGNORE_INSERTS = 0x00000200 };
+    #define MAKELANGID(a, b) 1 << 10
+    extern void OutputDebugStringW(const wchar_t*);
+    extern DWORD FormatMessageW( 
+        DWORD   dwFlags,
+        const char* lpSource,
+        DWORD   dwMessageId,
+        DWORD   dwLanguageId,
+        wchar_t* lpBuffer,
+        DWORD   nSize,
+        va_list* Arguments);
+}
 
 namespace Vim2Ds {
 
@@ -93,7 +111,7 @@ void ThrowAssertionFail(const utf8_t *InFile, int InLineNo) {
 #if PLATFORM_WINDOWS
 
 // Throw a runtime_error for last windows error
-void ThrowWinError(DWORD InWinErr, const utf8_t *InFile, int InLineNo) {
+void ThrowWinError(unsigned long InWinErr, const utf8_t *InFile, int InLineNo) {
     wchar_t WinMsg[200];
     if (!FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr, InWinErr, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), WinMsg,
                         sizeof(WinMsg) / sizeof(WinMsg[0]), nullptr)) {
@@ -101,7 +119,7 @@ void ThrowWinError(DWORD InWinErr, const utf8_t *InFile, int InLineNo) {
     }
 
     char FormattedMessage[1024];
-    snprintf(FormattedMessage, sizeof(FormattedMessage), "Error %d=\"%s\" at \"%s:%d\"", InWinErr, TCHAR_TO_UTF8(WinMsg).c_str(), InFile, InLineNo);
+    snprintf(FormattedMessage, sizeof(FormattedMessage), "Error %d=\"%s\" at \"%s:%d\"", InWinErr, TCHAR_TO_UTF8(WinMsg), InFile, InLineNo);
     throw std::runtime_error(FormattedMessage);
 }
 
@@ -109,6 +127,7 @@ void ThrowWinError(DWORD InWinErr, const utf8_t *InFile, int InLineNo) {
 
 void Write2Log(EP2DB /*InMsgLevel*/, const utf8_string & /*InMsg*/) {
 }
+
 
 // Print to debugger
 void Printf2DB(EP2DB InMsgLevel, const utf8_t *FormatString, ...) {

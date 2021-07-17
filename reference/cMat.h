@@ -2,7 +2,7 @@
 #define __MATRIX_H__
 
 #include "cVec.h"
-#include "Math.h"
+#include "MathConst.h"
 
 #define POSITIVE_X 0
 #define NEGATIVE_X 1

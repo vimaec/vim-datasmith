@@ -1,0 +1,107 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Fichiers d%27en-tête">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Fichiers de ressources">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Vim">
+      <UniqueIdentifier>{2f408495-f166-43a8-9610-a7274ad0a072}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="reference">
+      <UniqueIdentifier>{a1df990c-63c7-4352-a61a-7704e4eec2e9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="VimToDatasmith">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\VimToDatasmith\CVimToDatasmith.cpp">
+      <Filter>VimToDatasmith</Filter>
+    </ClCompile>
+    <ClCompile Include="..\VimToDatasmith\DebugTools.cpp">
+      <Filter>VimToDatasmith</Filter>
+    </ClCompile>
+    <ClCompile Include="..\VimToDatasmith\main.cpp">
+      <Filter>VimToDatasmith</Filter>
+    </ClCompile>
+    <ClCompile Include="..\VimToDatasmith\VimToDatasmith.cpp">
+      <Filter>VimToDatasmith</Filter>
+    </ClCompile>
+    <ClCompile Include="..\reference\cAABB.cpp">
+      <Filter>reference</Filter>
+    </ClCompile>
+    <ClCompile Include="..\reference\cMat.cpp">
+      <Filter>reference</Filter>
+    </ClCompile>
+    <ClCompile Include="..\reference\cSphere.cpp">
+      <Filter>reference</Filter>
+    </ClCompile>
+    <ClCompile Include="..\reference\Utils.cpp">
+      <Filter>reference</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\VimToDatasmith\CVimToDatasmith.h">
+      <Filter>VimToDatasmith</Filter>
+    </ClInclude>
+    <ClInclude Include="..\VimToDatasmith\DebugTools.h">
+      <Filter>VimToDatasmith</Filter>
+    </ClInclude>
+    <ClInclude Include="..\VimToDatasmith\VimToDatasmith.h">
+      <Filter>VimToDatasmith</Filter>
+    </ClInclude>
+    <ClInclude Include="..\VimToDatasmith\VimToDsWarningsDisabler.h">
+      <Filter>VimToDatasmith</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\bfast.h">
+      <Filter>Vim</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\g3d.h">
+      <Filter>Vim</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\vim.h">
+      <Filter>Vim</Filter>
+    </ClInclude>
+    <ClInclude Include="..\reference\cAABB.h">
+      <Filter>reference</Filter>
+    </ClInclude>
+    <ClInclude Include="..\reference\cEuler.h">
+      <Filter>reference</Filter>
+    </ClInclude>
+    <ClInclude Include="..\reference\cMat.h">
+      <Filter>reference</Filter>
+    </ClInclude>
+    <ClInclude Include="..\reference\cPlane.h">
+      <Filter>reference</Filter>
+    </ClInclude>
+    <ClInclude Include="..\reference\cQuat.h">
+      <Filter>reference</Filter>
+    </ClInclude>
+    <ClInclude Include="..\reference\cSphere.h">
+      <Filter>reference</Filter>
+    </ClInclude>
+    <ClInclude Include="..\reference\cVec.h">
+      <Filter>reference</Filter>
+    </ClInclude>
+    <ClInclude Include="..\reference\MathConst.h">
+      <Filter>reference</Filter>
+    </ClInclude>
+    <ClInclude Include="..\reference\Utils.h">
+      <Filter>reference</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\reference\cMat.inl">
+      <Filter>reference</Filter>
+    </None>
+    <None Include="..\reference\cQuat.inl">
+      <Filter>reference</Filter>
+    </None>
+  </ItemGroup>
+</Project>

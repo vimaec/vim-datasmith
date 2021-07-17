@@ -24,7 +24,7 @@ void Write2Log(EP2DB InMsgLevel, const utf8_string &InMsg);
 
 #if PLATFORM_WINDOWS
 
-[[noreturn]] void ThrowWinError(DWORD winErr, const utf8_t *InFile, int InLineNo);
+[[noreturn]] void ThrowWinError(unsigned long winErr, const utf8_t *InFile, int InLineNo);
 
 // This define throw an std::runtime_error
 #define TestWinError()                                 \

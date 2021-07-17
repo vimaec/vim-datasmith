@@ -15,16 +15,18 @@ int main(int argc, const char *argv[]) {
     return result;
 }
 
-#elif Windows
+#elif winOS
 
 DISABLE_SDK_WARNINGS_START
-#include "StringConv.h"
+#include "Containers/StringConv.h"
 DISABLE_SDK_WARNINGS_END
 
-int main(int argc, wchar_t *argv[], wchar_t *envp[]) {
+#include <vector>
+
+int wmain(int argc, wchar_t *argv[], wchar_t *envp[]) {
     std::vector<Vim2Ds::utf8_string> parameters;
     for (int i = 0; i < argc; ++i)
-        parameters.push_back(argv[i]);
+        parameters.push_back(TCHAR_TO_UTF8(argv[i]));
     std::vector<const Vim2Ds::utf8_t *> paramArray;
     for (int i = 0; i < argc; ++i)
         paramArray.push_back(parameters[i].c_str());

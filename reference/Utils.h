@@ -1,8 +1,6 @@
 #ifndef __Utils_h__
 #define __Utils_h__
 
-#include "Platform.h"
-#include <malloc/malloc.h>
 #include <vector>
 #include <string>
 #include <mutex>

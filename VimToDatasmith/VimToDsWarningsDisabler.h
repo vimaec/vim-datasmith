@@ -5,7 +5,7 @@
 
 // clang-format off
 
-#if Windows
+#if winOS
 
 #define DISABLE_SDK_WARNINGS_START \
 	__pragma(warning(push)) \
@@ -20,7 +20,8 @@
 	__pragma(warning(disable: 4005)) \
 	__pragma(warning(disable: 5038)) \
 	__pragma(warning(disable: 4275)) \
-	__pragma(warning(disable: 4250))
+	__pragma(warning(disable: 4250)) \
+	__pragma(warning(disable: 4251))
 
 #define DISABLE_SDK_WARNINGS_END \
 	__pragma(warning(pop))
