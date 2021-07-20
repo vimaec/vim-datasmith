@@ -30,19 +30,19 @@ template <class C> class TVector {
     size_t Count() const { return mCount; }
 
     // Access to element  by it's index
-    const C &operator[](size_t inIndex) const {
+    const C& operator[](size_t inIndex) const {
         TestAssertDebugOnly(inIndex < mCount);
         return mData[inIndex];
     }
 
     // Access to element  by it's index
-    C &operator[](size_t inIndex) {
+    C& operator[](size_t inIndex) {
         TestAssertDebugOnly(mData != nullptr && inIndex < mCount);
         return mData[inIndex];
     }
 
     // Print the content of this vector
-    void Print(const utf8_t *inDataName, const utf8_t *inSeparator = "\n\t\t") {
+    void Print(const utf8_t* inDataName, const utf8_t* inSeparator = "\n\t\t") {
         TraceF("\t%s Count=%lu", inDataName, mCount);
         for (size_t index = 0; index < mCount; ++index)
             TraceF("%s%lu %s", inSeparator, index, ToUtf8(mData[index]));
@@ -51,18 +51,18 @@ template <class C> class TVector {
 
   protected:
     size_t mCount = 0; // Return the number of elements
-    C *mData = nullptr; // Array of the elements
+    C* mData = nullptr; // Array of the elements
 };
 
 // Vector class that refers to attribute content.
 /* Doesn't copy the attribute's content */
 template <class C> class TAttributeVector : public TVector<C> {
   public:
-    void Initialize(const g3d::Attribute &inAttr) {
+    void Initialize(const g3d::Attribute& inAttr) {
         size_t dataSize = inAttr.byte_size();
         this->mCount = dataSize / sizeof(C);
         TestAssert(dataSize == this->mCount * sizeof(C));
-        this->mData = reinterpret_cast<C *>(inAttr._begin);
+        this->mData = reinterpret_cast<C*>(inAttr._begin);
     }
 };
 
@@ -97,7 +97,7 @@ class CVimToDatasmith {
     ~CVimToDatasmith();
 
     // Parse parameters to get Vim file path and datasmith file path
-    void GetParameters(int argc, const utf8_t *argv[]);
+    void GetParameters(int argc, const utf8_t* argv[]);
 
     // Initialize the Vim scene with the vim file
     void ReadVimFile();
@@ -149,7 +149,7 @@ class CVimToDatasmith {
         MaterialEntry(int32_t inVimId);
 
         // Copy constructor required to be in a std::vector
-        MaterialEntry(const MaterialEntry &inOther);
+        MaterialEntry(const MaterialEntry& inOther);
 
         std::atomic<int32_t> mCount; // Number of mesh using this materials
         int32_t mVimId; // Vim material id

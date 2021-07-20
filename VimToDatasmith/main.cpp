@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-int main(int argc, const char *argv[]) {
+int main(int argc, const char* argv[]) {
     int result = EXIT_FAILURE;
     @autoreleasepool {
         result = Vim2Ds::Convert(argc, argv);
@@ -23,11 +23,11 @@ DISABLE_SDK_WARNINGS_END
 
 #include <vector>
 
-int wmain(int argc, wchar_t *argv[], wchar_t *envp[]) {
+int wmain(int argc, wchar_t* argv[], wchar_t* envp[]) {
     std::vector<Vim2Ds::utf8_string> parameters;
     for (int i = 0; i < argc; ++i)
         parameters.push_back(TCHAR_TO_UTF8(argv[i]));
-    std::vector<const Vim2Ds::utf8_t *> paramArray;
+    std::vector<const Vim2Ds::utf8_t*> paramArray;
     for (int i = 0; i < argc; ++i)
         paramArray.push_back(parameters[i].c_str());
     paramArray.push_back(nullptr);

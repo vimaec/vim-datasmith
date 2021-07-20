@@ -25,7 +25,7 @@ void Usage() {
     exit(EXIT_FAILURE);
 }
 
-void ExtractPathNameExtension(const std::string &inFilePathName, std::string *outPath, std::string *outName, std::string *outExtension) {
+void ExtractPathNameExtension(const std::string& inFilePathName, std::string* outPath, std::string* outName, std::string* outExtension) {
     std::string::size_type posName = inFilePathName.find_last_of(DirectorySeparator) + 1;
     std::string::size_type posExtension = inFilePathName.find_last_of('.');
     if (posExtension >= posName) {
@@ -48,7 +48,7 @@ static void InitDatasmith() {
     FDatasmithExporterManager::Initialize(Options);
 }
 
-int Convert(int argc, const utf8_t *argv[]) {
+int Convert(int argc, const utf8_t* argv[]) {
     int result = EXIT_FAILURE;
     try {
         InitDatasmith();
@@ -58,7 +58,7 @@ int Convert(int argc, const utf8_t *argv[]) {
         vimToDatasmith.CreateDatasmithScene();
         vimToDatasmith.CreateDatasmithFile();
         result = EXIT_SUCCESS;
-    } catch (const std::exception &e) {
+    } catch (const std::exception& e) {
         DebugF("Convert - Exception %s\n", e.what());
     } catch (...) {
         DebugF("Convert - Unknown exception\n");
@@ -74,24 +74,24 @@ utf8_string ToString(uint32_t inUInt) {
     return Utf8StringFormat("%u", inUInt);
 }
 
-utf8_string ToString(const cVec3 &inVec3) {
+utf8_string ToString(const cVec3& inVec3) {
     return Utf8StringFormat("%f, %f, %f", inVec3.x, inVec3.y, inVec3.z);
 }
 
-utf8_string ToString(const cVec4 &inVec4) {
+utf8_string ToString(const cVec4& inVec4) {
     return Utf8StringFormat("%f, %f, %f, %f", inVec4.x, inVec4.y, inVec4.z, inVec4.w);
 }
 
-utf8_string ToString(const cMat4 &inTransform, const utf8_t *inSep) {
+utf8_string ToString(const cMat4& inTransform, const utf8_t* inSep) {
     return Utf8StringFormat("%s%s, %s%s, %s%s, %s%s", inSep, ToUtf8(inTransform.mRow0), inSep, ToUtf8(inTransform.mRow1), inSep, ToUtf8(inTransform.mRow2),
                             inSep, ToUtf8(inTransform.mRow3));
 }
 
-utf8_string ToString(const ubyte4 &inColor) {
+utf8_string ToString(const ubyte4& inColor) {
     return Utf8StringFormat("%d, %d, %d, %d", inColor.x, inColor.y, inColor.z, inColor.w);
 }
 
-utf8_string ToString(const cAABB &inAxisAlignedBoundingBox) {
+utf8_string ToString(const cAABB& inAxisAlignedBoundingBox) {
     return Utf8StringFormat("{(%s), (%s)}", ToUtf8(inAxisAlignedBoundingBox.mMin), ToUtf8(inAxisAlignedBoundingBox.mMax));
 }
 

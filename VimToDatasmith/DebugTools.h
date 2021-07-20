@@ -13,18 +13,18 @@ namespace Vim2Ds {
 
 typedef enum { kP2DB_Report = 1, kP2DB_Debug, kP2DB_ReportAndDebug, kP2DB_Trace, kP2DB_Verbose } EP2DB;
 
-void Printf2DB(EP2DB InMsgLevel, const utf8_t *FormatString, ...) __printflike(2, 3);
+void Printf2DB(EP2DB InMsgLevel, const utf8_t* FormatString, ...) __printflike(2, 3);
 
 // Write string to log file
-void Write2Log(EP2DB InMsgLevel, const utf8_string &InMsg);
+void Write2Log(EP2DB InMsgLevel, const utf8_string& InMsg);
 
-[[noreturn]] void ThrowMessage(const utf8_t *MessageFormatString, ...);
-[[noreturn]] void ThrowPtrNull(const utf8_t *InFile, int InLineNo);
-[[noreturn]] void ThrowAssertionFail(const utf8_t *InFile, int InLineNo);
+[[noreturn]] void ThrowMessage(const utf8_t* MessageFormatString, ...);
+[[noreturn]] void ThrowPtrNull(const utf8_t* InFile, int InLineNo);
+[[noreturn]] void ThrowAssertionFail(const utf8_t* InFile, int InLineNo);
 
 #if PLATFORM_WINDOWS
 
-[[noreturn]] void ThrowWinError(unsigned long winErr, const utf8_t *InFile, int InLineNo);
+[[noreturn]] void ThrowWinError(unsigned long winErr, const utf8_t* InFile, int InLineNo);
 
 // This define throw an std::runtime_error
 #define TestWinError()                                 \

@@ -33,7 +33,7 @@ CVimToDatasmith::MaterialEntry::MaterialEntry(int32_t inVimId)
 }
 
 // Copy constructor required to be in a std::vector
-CVimToDatasmith::MaterialEntry::MaterialEntry(const MaterialEntry &inOther)
+CVimToDatasmith::MaterialEntry::MaterialEntry(const MaterialEntry& inOther)
     : mCount((int32_t)inOther.mCount)
     , mVimId(inOther.mVimId)
     , mMaterialElement(inOther.mMaterialElement)
@@ -51,7 +51,7 @@ CVimToDatasmith::~CVimToDatasmith() {
 }
 
 // Parse parameters to get Vim file path and datasmith file path
-void CVimToDatasmith::GetParameters(int argc, const utf8_t *argv[]) {
+void CVimToDatasmith::GetParameters(int argc, const utf8_t* argv[]) {
     if (argc < 2 || argc > 3)
         Usage();
 
@@ -94,14 +94,14 @@ void CVimToDatasmith::ReadVimFile() {
 // Create datasmith materials from Vim ones
 void CVimToDatasmith::CreateMaterials() {
     TraceF("CVimToDatasmith::CreateMaterials\n");
-    Vim::EntityTable &materialTable = mVimScene.mEntityTables["table:Rvt.Material"];
-    const std::vector<double> &idArray = materialTable.mNumericColumns["Id"];
-    const std::vector<double> &colorXArray = materialTable.mNumericColumns["Color.X"];
-    const std::vector<double> &colorYArray = materialTable.mNumericColumns["Color.Y"];
-    const std::vector<double> &colorZArray = materialTable.mNumericColumns["Color.Z"];
-    const std::vector<double> &transparencyArray = materialTable.mNumericColumns["Transparency"];
-    const std::vector<double> &glossinessArray = materialTable.mNumericColumns["Glossiness"];
-    const std::vector<double> &smoothnessArray = materialTable.mNumericColumns["Smoothness"];
+    Vim::EntityTable& materialTable = mVimScene.mEntityTables["table:Rvt.Material"];
+    const std::vector<double>& idArray = materialTable.mNumericColumns["Id"];
+    const std::vector<double>& colorXArray = materialTable.mNumericColumns["Color.X"];
+    const std::vector<double>& colorYArray = materialTable.mNumericColumns["Color.Y"];
+    const std::vector<double>& colorZArray = materialTable.mNumericColumns["Color.Z"];
+    const std::vector<double>& transparencyArray = materialTable.mNumericColumns["Transparency"];
+    const std::vector<double>& glossinessArray = materialTable.mNumericColumns["Glossiness"];
+    const std::vector<double>& smoothnessArray = materialTable.mNumericColumns["Smoothness"];
 
     for (size_t i = 0; i < idArray.size(); i++) {
         uint32_t vimMaterialId = (uint32_t)idArray[i];
@@ -121,9 +121,9 @@ void CVimToDatasmith::CreateMaterials() {
         materialEntry.mParams.x = glossinessArray.size() > i ? (float)glossinessArray[i] / 256.0f : 0.5f;
         materialEntry.mParams.y = smoothnessArray.size() > i ? (float)smoothnessArray[i] / 256.0f : 50.0f / 256.0f;
 
-        IDatasmithUEPbrMaterialElement &element = materialEntry.mMaterialElement.Get();
+        IDatasmithUEPbrMaterialElement& element = materialEntry.mMaterialElement.Get();
         element.SetLabel(UTF8_TO_TCHAR(Utf8StringFormat("Vim %d", vimMaterialId).c_str()));
-        IDatasmithMaterialExpressionColor *DiffuseExpression = element.AddMaterialExpression<IDatasmithMaterialExpressionColor>();
+        IDatasmithMaterialExpressionColor* DiffuseExpression = element.AddMaterialExpression<IDatasmithMaterialExpressionColor>();
         if (DiffuseExpression != nullptr) {
             FLinearColor dsColor(materialEntry.mColor.x, materialEntry.mColor.y, materialEntry.mColor.z, materialEntry.mColor.w);
             DiffuseExpression->GetColor() = dsColor;
@@ -173,8 +173,8 @@ TSharedPtr<IDatasmithMeshElement> CVimToDatasmith::CreateDatasmithMesh(int32 geo
 
     // Copy used vertex to the mesh
     mesh.SetVerticesCount(verticesCount);
-    for (const auto &iter : vimIndiceToDsMeshIndice) {
-        const cVec3 &position = mPositions[iter.first];
+    for (const auto& iter : vimIndiceToDsMeshIndice) {
+        const cVec3& position = mPositions[iter.first];
         mesh.SetVertex(iter.second, position.x * Meter2Centimeter, -position.y * Meter2Centimeter, position.z * Meter2Centimeter);
     }
 
@@ -204,7 +204,7 @@ TSharedPtr<IDatasmithMeshElement> CVimToDatasmith::CreateDatasmithMesh(int32 geo
         for (int i = 0; i < 3; ++i) {
             uint32_t indice = mIndices[vimIndice++];
             triangleVertices[reorder[i]] = vimIndiceToDsMeshIndice[indice];
-            const cVec3 &normal = mNormals[indice];
+            const cVec3& normal = mNormals[indice];
             mesh.SetNormal(indexFace * 3 + reorder[i], normal.x, -normal.y, normal.z);
         }
 
@@ -224,10 +224,10 @@ TSharedPtr<IDatasmithMeshElement> CVimToDatasmith::CreateDatasmithMesh(int32 geo
     TSharedPtr<IDatasmithMeshElement> meshElement = MeshExporter.ExportToUObject(*mOutputPath, mesh.GetName(), mesh, nullptr, EDSExportLightmapUV::Never);
     if (meshElement.IsValid()) {
         meshElement->SetLabel(UTF8_TO_TCHAR(Utf8StringFormat("Geometry %d", geometryIndex).c_str()));
-        for (auto &iter : vimMaterialIdToDsMeshMaterialIndice) {
+        for (auto& iter : vimMaterialIdToDsMeshMaterialIndice) {
             size_t materialIndex = mVimToDatasmithMaterialMap[iter.first];
             TestAssert(materialIndex < mMaterials.size());
-            MaterialEntry &materialEntry = mMaterials[materialIndex];
+            MaterialEntry& materialEntry = mMaterials[materialIndex];
             materialEntry.mCount++;
             meshElement->SetMaterial(materialEntry.mMaterialElement->GetName(), iter.second);
         }
@@ -243,20 +243,20 @@ void CVimToDatasmith::FixOldVimFileTransforms() {
         std::vector<bool> isTransformed(mGroupVertexOffets.Count(), false);
 
         for (size_t nodeIndex = 0; nodeIndex < mVimScene.mNodes.size(); ++nodeIndex) {
-            const Vim::SceneNode &node = mVimScene.mNodes[nodeIndex];
+            const Vim::SceneNode& node = mVimScene.mNodes[nodeIndex];
             if (node.mGeometry != kNoGeometry) {
                 TestAssert(node.mGeometry < (int)isTransformed.size());
                 if (!isTransformed[node.mGeometry]) {
                     isTransformed[node.mGeometry] = true;
                     TestAssert(node.mInstance == nodeIndex || node.mInstance == kNoInstance);
 
-                    cMat4 trans = (*(cMat4 *)node.mTransform);
+                    cMat4 trans = (*(cMat4*)node.mTransform);
                     cMat4 invTrans = trans.Inverse();
 
                     uint32_t nextOffset =
                         node.mGeometry < (int)mGroupVertexOffets.Count() ? mGroupVertexOffets[node.mGeometry + 1] : uint32_t(mPositions.Count());
                     for (uint32_t index = mGroupVertexOffets[node.mGeometry]; index < nextOffset; ++index) {
-                        cVec3 &vertex = mPositions[index];
+                        cVec3& vertex = mPositions[index];
                         vertex = vertex * invTrans;
                     }
                 }
@@ -271,7 +271,7 @@ void CVimToDatasmith::ProcessGeometry() {
 
     TAttributeVector<cVec4> colorAttribute;
 
-    for (const g3d::Attribute &attr : mVimScene.mGeometry.attributes) {
+    for (const g3d::Attribute& attr : mVimScene.mGeometry.attributes) {
         auto descriptorString = attr.descriptor.to_string();
         if (descriptorString == g3d::descriptors::VertexColorWithAlpha)
             colorAttribute.Initialize(attr);
@@ -338,7 +338,7 @@ void CVimToDatasmith::ProcessInstances() {
     TraceF("CVimToDatasmith::ProcessInstances\n");
 
     for (size_t nodeIndex = 0; nodeIndex < mVimScene.mNodes.size(); nodeIndex++) {
-        const Vim::SceneNode &node = mVimScene.mNodes[nodeIndex];
+        const Vim::SceneNode& node = mVimScene.mNodes[nodeIndex];
 
         // Get instance geometry definition
         int geometryIndex = kNoGeometry;
@@ -358,7 +358,7 @@ void CVimToDatasmith::ProcessInstances() {
                 meshActor->SetStaticMeshPathName(mesh->GetName());
                 mDatasmithScene->AddActor(meshActor);
 
-                const cMat4 &nodeTrans = *reinterpret_cast<const cMat4 *>(node.mTransform);
+                const cMat4& nodeTrans = *reinterpret_cast<const cMat4*>(node.mTransform);
 
                 cQuat quat;
                 quat.FromMat4(nodeTrans);
@@ -377,7 +377,7 @@ void CVimToDatasmith::ProcessInstances() {
 
 // Add Datasmith materials used to the scene
 void CVimToDatasmith::AddUsedMaterials() {
-    for (auto &material : mMaterials) {
+    for (auto& material : mMaterials) {
         if (material.mCount > 0)
             mDatasmithScene->AddMaterial(material.mMaterialElement);
     }

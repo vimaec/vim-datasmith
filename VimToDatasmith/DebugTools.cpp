@@ -18,14 +18,14 @@ extern "C" {
 typedef unsigned long DWORD;
 enum { FORMAT_MESSAGE_FROM_SYSTEM = 0x00001000, FORMAT_MESSAGE_IGNORE_INSERTS = 0x00000200 };
 #define MAKELANGID(a, b) 1 << 10
-extern void OutputDebugStringW(const wchar_t *);
-extern DWORD FormatMessageW(DWORD dwFlags, const char *lpSource, DWORD dwMessageId, DWORD dwLanguageId, wchar_t *lpBuffer, DWORD nSize, va_list *Arguments);
+extern void OutputDebugStringW(const wchar_t*);
+extern DWORD FormatMessageW(DWORD dwFlags, const char* lpSource, DWORD dwMessageId, DWORD dwLanguageId, wchar_t* lpBuffer, DWORD nSize, va_list* Arguments);
 }
 
 namespace Vim2Ds {
 
 // Print in a string using the format and arguments list
-utf8_string VStringFormat(const utf8_t *InFmt, va_list InArgumentsList) {
+utf8_string VStringFormat(const utf8_t* InFmt, va_list InArgumentsList) {
     // We need to copy in case of formatted string is bigger than default buffer
     va_list ArgumentsListCopy;
     va_copy(ArgumentsListCopy, InArgumentsList);
@@ -46,7 +46,7 @@ utf8_string VStringFormat(const utf8_t *InFmt, va_list InArgumentsList) {
         // needed to create a right sized string
         utf8_string FormattedString;
         FormattedString.resize(FormattedStringSize);
-        FormattedStringSize = vsnprintf((utf8_t *)FormattedString.c_str(), FormattedString.size() + 1, InFmt, ArgumentsListCopy);
+        FormattedStringSize = vsnprintf((utf8_t*)FormattedString.c_str(), FormattedString.size() + 1, InFmt, ArgumentsListCopy);
         va_end(ArgumentsListCopy);
         if (FormattedStringSize < 0) {
             throw std::runtime_error("vStringFormat - vsnprintf return an error");
@@ -60,7 +60,7 @@ utf8_string VStringFormat(const utf8_t *InFmt, va_list InArgumentsList) {
 }
 
 // Print in a string using the format and arguments
-utf8_string Utf8StringFormat(const utf8_t *InFmt, ...) {
+utf8_string Utf8StringFormat(const utf8_t* InFmt, ...) {
     utf8_string FormattedString;
 
     // Try to print in a buffer
@@ -79,7 +79,7 @@ utf8_string Utf8StringFormat(const utf8_t *InFmt, ...) {
     return FormattedString;
 }
 
-void ThrowMessage(const utf8_t *MessageFormatString, ...) {
+void ThrowMessage(const utf8_t* MessageFormatString, ...) {
     va_list argptr;
     va_start(argptr, MessageFormatString);
     utf8_string FormattedMessage(VStringFormat(MessageFormatString, argptr));
@@ -88,14 +88,14 @@ void ThrowMessage(const utf8_t *MessageFormatString, ...) {
 }
 
 // Throw a runtime_error for null pointer
-void ThrowPtrNULL(const utf8_t *InFile, int InLineNo) {
+void ThrowPtrNULL(const utf8_t* InFile, int InLineNo) {
     utf8_t FormattedMessage[1024];
     snprintf(FormattedMessage, sizeof(FormattedMessage), "Pointer NULL at \"%s:%d\"", InFile, InLineNo);
     throw std::runtime_error(FormattedMessage);
 }
 
 // Throw a runtime_error for assertion fail
-void ThrowAssertionFail(const utf8_t *InFile, int InLineNo) {
+void ThrowAssertionFail(const utf8_t* InFile, int InLineNo) {
     utf8_t FormattedMessage[1024];
     snprintf(FormattedMessage, sizeof(FormattedMessage), "Assertion failed at \"%s:%d\"", InFile, InLineNo);
     throw std::runtime_error(FormattedMessage);
@@ -104,7 +104,7 @@ void ThrowAssertionFail(const utf8_t *InFile, int InLineNo) {
 #if PLATFORM_WINDOWS
 
 // Throw a runtime_error for last windows error
-void ThrowWinError(unsigned long InWinErr, const utf8_t *InFile, int InLineNo) {
+void ThrowWinError(unsigned long InWinErr, const utf8_t* InFile, int InLineNo) {
     wchar_t WinMsg[200];
     if (!FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr, InWinErr, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), WinMsg,
                         sizeof(WinMsg) / sizeof(WinMsg[0]), nullptr)) {
@@ -118,11 +118,11 @@ void ThrowWinError(unsigned long InWinErr, const utf8_t *InFile, int InLineNo) {
 
 #endif
 
-void Write2Log(EP2DB /*InMsgLevel*/, const utf8_string & /*InMsg*/) {
+void Write2Log(EP2DB /*InMsgLevel*/, const utf8_string& /*InMsg*/) {
 }
 
 // Print to debugger
-void Printf2DB(EP2DB InMsgLevel, const utf8_t *FormatString, ...) {
+void Printf2DB(EP2DB InMsgLevel, const utf8_t* FormatString, ...) {
     try {
         va_list argptr;
         va_start(argptr, FormatString);
