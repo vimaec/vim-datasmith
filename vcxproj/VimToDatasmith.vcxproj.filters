@@ -19,6 +19,9 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
+    <Filter Include="UnrealEngine">
+      <UniqueIdentifier>{05e9f93a-fc45-4829-ad92-718c5da4d13c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\VimToDatasmith\CVimToDatasmith.cpp">
@@ -44,6 +47,18 @@
     </ClCompile>
     <ClCompile Include="..\reference\Utils.cpp">
       <Filter>reference</Filter>
+    </ClCompile>
+    <ClCompile Include="..\UnrealEngine\DatasmithHashTools.cpp">
+      <Filter>UnrealEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\UnrealEngine\DatasmithSceneValidator.cpp">
+      <Filter>UnrealEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\VimToDatasmith\CTaskMgr.cpp">
+      <Filter>VimToDatasmith</Filter>
+    </ClCompile>
+    <ClCompile Include="..\VimToDatasmith\TimeStat.cpp">
+      <Filter>VimToDatasmith</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -94,6 +109,18 @@
     </ClInclude>
     <ClInclude Include="..\reference\Utils.h">
       <Filter>reference</Filter>
+    </ClInclude>
+    <ClInclude Include="..\UnrealEngine\DatasmithHashTools.h">
+      <Filter>UnrealEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\UnrealEngine\DatasmithSceneValidator.h">
+      <Filter>UnrealEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\VimToDatasmith\CTaskMgr.h">
+      <Filter>VimToDatasmith</Filter>
+    </ClInclude>
+    <ClInclude Include="..\VimToDatasmith\TimeStat.h">
+      <Filter>VimToDatasmith</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

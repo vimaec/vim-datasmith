@@ -1,9 +1,12 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "DatasmithSceneValidator.h"
+
+DISABLE_SDK_WARNINGS_START
 #include "DatasmithAnimationElements.h"
 #include "DatasmithUtils.h"
 #include "DatasmithVariantElements.h"
+DISABLE_SDK_WARNINGS_END
 
 namespace Datasmith {
 

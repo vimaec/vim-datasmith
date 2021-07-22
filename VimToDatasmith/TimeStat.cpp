@@ -3,10 +3,13 @@
 #include "TimeStat.h"
 #include "DebugTools.h"
 
-#if PLATFORM_MAC
+#if macOS
 #include <sys/time.h>
 #include <sys/times.h>
 #include <unistd.h>
+#endif
+#if winOS
+#include <windows.h>
 #endif
 
 namespace Vim2Ds {

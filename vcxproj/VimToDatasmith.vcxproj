@@ -15,9 +15,13 @@
     <ClCompile Include="..\reference\cMat.cpp" />
     <ClCompile Include="..\reference\cSphere.cpp" />
     <ClCompile Include="..\reference\Utils.cpp" />
+    <ClCompile Include="..\UnrealEngine\DatasmithHashTools.cpp" />
+    <ClCompile Include="..\UnrealEngine\DatasmithSceneValidator.cpp" />
+    <ClCompile Include="..\VimToDatasmith\CTaskMgr.cpp" />
     <ClCompile Include="..\VimToDatasmith\CVimToDatasmith.cpp" />
     <ClCompile Include="..\VimToDatasmith\DebugTools.cpp" />
     <ClCompile Include="..\VimToDatasmith\main.cpp" />
+    <ClCompile Include="..\VimToDatasmith\TimeStat.cpp" />
     <ClCompile Include="..\VimToDatasmith\VimToDatasmith.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -33,8 +37,12 @@
     <ClInclude Include="..\src\bfast.h" />
     <ClInclude Include="..\src\g3d.h" />
     <ClInclude Include="..\src\vim.h" />
+    <ClInclude Include="..\UnrealEngine\DatasmithHashTools.h" />
+    <ClInclude Include="..\UnrealEngine\DatasmithSceneValidator.h" />
+    <ClInclude Include="..\VimToDatasmith\CTaskMgr.h" />
     <ClInclude Include="..\VimToDatasmith\CVimToDatasmith.h" />
     <ClInclude Include="..\VimToDatasmith\DebugTools.h" />
+    <ClInclude Include="..\VimToDatasmith\TimeStat.h" />
     <ClInclude Include="..\VimToDatasmith\VimToDatasmith.h" />
     <ClInclude Include="..\VimToDatasmith\VimToDsWarningsDisabler.h" />
   </ItemGroup>
