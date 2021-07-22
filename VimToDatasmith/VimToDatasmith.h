@@ -5,32 +5,34 @@
 
 #include "VimToDsWarningsDisabler.h"
 
-
-#include <string>
 #include <cmath>
-
+#include <string>
 
 class cVec3;
 class cVec4;
 class cMat4;
 class ubyte4;
 class cAABB;
-class FQuat;
-class FVector;
 
 namespace Vim2Ds {
 
-
 // All code is utf8 based
-typedef char		utf8_t;
+typedef char utf8_t;
 typedef std::string utf8_string;
 
 #ifndef __clang__
-	#define __printflike(a, b)
+#define __printflike(a, b)
+#endif
+
+#if macOS
+#define AutoReleasePool @autoreleasepool
+#else
+#define AutoReleasePool
 #endif
 
 // Format string
-utf8_string VStringFormat(const utf8_t* InFmt, va_list InArgumentsList) __printflike(1, 0);;
+utf8_string VStringFormat(const utf8_t* InFmt, va_list InArgumentsList) __printflike(1, 0);
+;
 
 // Print in a string using the format and arguments
 utf8_string Utf8StringFormat(const utf8_t* InFmt, ...) __printflike(1, 2);
@@ -63,15 +65,15 @@ utf8_string ToString(const cAABB& inAxisAlignedBoundingBox);
 
 // Return true if the value is near zero (relative to epsilon provided
 inline bool IsNearZero(float inValue, float inEps = 0.001f) {
-	return fabsf(inValue) < inEps;
+    return fabsf(inValue) < inEps;
 }
 
 // Return the square of the value
 inline float sqr(float inValue) {
-	return inValue * inValue;
+    return inValue * inValue;
 }
 
 // To convert from Vim meters to UE centimeter units
 extern const float Meter2Centimeter;
 
-} // namespace Vim2Dsc
+} // namespace Vim2Ds

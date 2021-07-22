@@ -1,4 +1,5 @@
 #include "cPlane.h"
+#include <assert.h>
 
 inline cQuat::cQuat(const cVec3 &From, const cVec3 &To)
 {

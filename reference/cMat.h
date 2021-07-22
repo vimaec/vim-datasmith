@@ -2,7 +2,7 @@
 #define __MATRIX_H__
 
 #include "cVec.h"
-#include "Math.h"
+#include "MathConst.h"
 
 #define POSITIVE_X 0
 #define NEGATIVE_X 1
@@ -202,6 +202,13 @@ public:
 
     float Determenent() const;
 
+	bool IsIdentity() const {
+        return (m16[ 0] == 1.0f && m16[ 1] == 0.0f && m16[ 2] == 0.0f && m16[ 3] == 0.0f &&
+                m16[ 4] == 0.0f && m16[ 5] == 1.0f && m16[ 6] == 0.0f && m16[ 7] == 0.0f &&
+                m16[ 8] == 0.0f && m16[ 9] == 0.0f && m16[10] == 1.0f && m16[11] == 0.0f &&
+                m16[12] == 0.0f && m16[13] == 0.0f && m16[14] == 0.0f && m16[15] == 1.0f);
+	}
+	
     // helper functions
     static cMat4 rotMatX(const float angle);
     static cMat4 rotMatY(const float angle);

@@ -18,8 +18,13 @@ namespace Utils
         {
             off_t fileSize = stat_buf.st_size;
 
-            FILE* file;
-			file = fopen(fileName.c_str(), "rb");
+#ifndef __clang__
+            FILE* file = nullptr;
+            if (fopen_s(&file, fileName.c_str(), "wb") != 0)
+                file = nullptr;
+#else
+            FILE* file = fopen(fileName.c_str(), "rb");
+#endif
             if (file != nullptr)
             {
                 auto buffer = tracked_new char[fileSize + 1];

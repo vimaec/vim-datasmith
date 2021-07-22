@@ -3,6 +3,7 @@
 
 #include "cVec.h"
 #include "cMat.h"
+#include <assert.h>
 
 class cAABB;
 const float mRadiusEpsilon = 1e-2f;

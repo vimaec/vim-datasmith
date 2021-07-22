@@ -5,7 +5,7 @@
 
 // clang-format off
 
-#if Windows
+#if winOS
 
 #define DISABLE_SDK_WARNINGS_START \
 	__pragma(warning(push)) \
@@ -20,7 +20,8 @@
 	__pragma(warning(disable: 4005)) \
 	__pragma(warning(disable: 5038)) \
 	__pragma(warning(disable: 4275)) \
-	__pragma(warning(disable: 4250))
+	__pragma(warning(disable: 4250)) \
+	__pragma(warning(disable: 4251))
 
 #define DISABLE_SDK_WARNINGS_END \
 	__pragma(warning(pop))
@@ -31,8 +32,10 @@
     _Pragma( "clang diagnostic push" ) \
     _Pragma( "clang diagnostic ignored \"-Wdeprecated-declarations\"" ) \
     _Pragma( "clang diagnostic ignored \"-Wunused-parameter\"" ) \
+	_Pragma( "clang diagnostic ignored \"-Wunused-variable\"" ) \
     _Pragma( "clang diagnostic ignored \"-Wdocumentation\"" ) \
 	_Pragma( "clang diagnostic ignored \"-Wshorten-64-to-32\"" ) \
+	_Pragma( "clang diagnostic ignored \"-Wswitch\"" ) \
     _Pragma( "clang diagnostic ignored \"-Wdefaulted-function-deleted\"" ) \
     _Pragma( "clang diagnostic ignored \"-Winconsistent-missing-override\"" ) \
     _Pragma( "clang diagnostic ignored \"-Wtautological-undefined-compare\"" ) \
