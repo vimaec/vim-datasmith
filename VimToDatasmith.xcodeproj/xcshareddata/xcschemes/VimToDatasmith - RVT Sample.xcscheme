@@ -52,6 +52,10 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
+            argument = "-NoHierarchicalInstance"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
             argument = "&quot;/Volumes/RY Donn&#xe9;es/Downloads/VIM/rac_basic_sample_project.vim&quot;"
             isEnabled = "YES">
          </CommandLineArgument>

@@ -88,7 +88,7 @@ void ThrowMessage(const utf8_t* MessageFormatString, ...) {
 }
 
 // Throw a runtime_error for null pointer
-void ThrowPtrNULL(const utf8_t* InFile, int InLineNo) {
+void ThrowPtrNull(const utf8_t* InFile, int InLineNo) {
     utf8_t FormattedMessage[1024];
     snprintf(FormattedMessage, sizeof(FormattedMessage), "Pointer NULL at \"%s:%d\"", InFile, InLineNo);
     throw std::runtime_error(FormattedMessage);

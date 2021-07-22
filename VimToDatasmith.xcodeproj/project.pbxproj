@@ -11,6 +11,10 @@
 		0230D8E3269CA9F000EE9AD6 /* cMat.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0230D8CE269CA9F000EE9AD6 /* cMat.cpp */; };
 		0230D8E8269CA9F000EE9AD6 /* VimToDatasmith.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0230D8DF269CA9F000EE9AD6 /* VimToDatasmith.cpp */; };
 		0230D8E9269CA9F000EE9AD6 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0230D8E1269CA9F000EE9AD6 /* main.cpp */; };
+		0276C33826A383C5005A9769 /* DatasmithHashTools.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0276C33626A383C5005A9769 /* DatasmithHashTools.cpp */; };
+		0276C33F26A5D0D5005A9769 /* DatasmithSceneValidator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0276C33E26A5D079005A9769 /* DatasmithSceneValidator.cpp */; };
+		0276C34226A66356005A9769 /* CTaskMgr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0276C34126A66356005A9769 /* CTaskMgr.cpp */; };
+		02A6021026A9225600158384 /* TimeStat.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02A6020F26A9225600158384 /* TimeStat.cpp */; };
 		02E14366269DCF1D00856873 /* CVimToDatasmith.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E14365269DCF1D00856873 /* CVimToDatasmith.cpp */; };
 /* End PBXBuildFile section */
 
@@ -52,6 +56,14 @@
 		0230D8DF269CA9F000EE9AD6 /* VimToDatasmith.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VimToDatasmith.cpp; sourceTree = "<group>"; };
 		0230D8E0269CA9F000EE9AD6 /* VimToDatasmith.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VimToDatasmith.h; sourceTree = "<group>"; };
 		0230D8E1269CA9F000EE9AD6 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		0276C33626A383C5005A9769 /* DatasmithHashTools.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DatasmithHashTools.cpp; sourceTree = "<group>"; };
+		0276C33726A383C5005A9769 /* DatasmithHashTools.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DatasmithHashTools.h; sourceTree = "<group>"; };
+		0276C33D26A5D079005A9769 /* DatasmithSceneValidator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DatasmithSceneValidator.h; sourceTree = "<group>"; };
+		0276C33E26A5D079005A9769 /* DatasmithSceneValidator.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = DatasmithSceneValidator.cpp; sourceTree = "<group>"; };
+		0276C34026A66356005A9769 /* CTaskMgr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CTaskMgr.h; sourceTree = "<group>"; };
+		0276C34126A66356005A9769 /* CTaskMgr.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CTaskMgr.cpp; sourceTree = "<group>"; };
+		02A6020E26A9225600158384 /* TimeStat.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TimeStat.h; sourceTree = "<group>"; };
+		02A6020F26A9225600158384 /* TimeStat.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TimeStat.cpp; sourceTree = "<group>"; };
 		02E14364269DCF1D00856873 /* CVimToDatasmith.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CVimToDatasmith.h; sourceTree = "<group>"; };
 		02E14365269DCF1D00856873 /* CVimToDatasmith.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CVimToDatasmith.cpp; sourceTree = "<group>"; };
 		02E14367269F054800856873 /* DatasmithSDK */ = {isa = PBXFileReference; lastKnownFileType = folder; name = DatasmithSDK; path = ../../../../MacDev/GitEpicGames/UE427/Engine/Binaries/Mac/DatasmithSDK; sourceTree = "<group>"; };
@@ -78,6 +90,7 @@
 				0230D8C6269CA9F000EE9AD6 /* reference */,
 				0230D8C2269CA9EF00EE9AD6 /* Settings */,
 				0230D8D6269CA9F000EE9AD6 /* Vim */,
+				0276C33C26A5D079005A9769 /* UnrealEngine */,
 				0230D8DD269CA9F000EE9AD6 /* VimToDatasmith */,
 				020013F5269CA8DF00D6C8A5 /* Products */,
 				02E14367269F054800856873 /* DatasmithSDK */,
@@ -139,6 +152,8 @@
 		0230D8DD269CA9F000EE9AD6 /* VimToDatasmith */ = {
 			isa = PBXGroup;
 			children = (
+				02A6020F26A9225600158384 /* TimeStat.cpp */,
+				02A6020E26A9225600158384 /* TimeStat.h */,
 				0230D8C3269CA9EF00EE9AD6 /* VimToDsWarningsDisabler.h */,
 				02E14365269DCF1D00856873 /* CVimToDatasmith.cpp */,
 				02E14364269DCF1D00856873 /* CVimToDatasmith.h */,
@@ -146,9 +161,22 @@
 				0230D8E0269CA9F000EE9AD6 /* VimToDatasmith.h */,
 				022F3652269CB96500623F93 /* DebugTools.cpp */,
 				022F3653269CB96500623F93 /* DebugTools.h */,
+				0276C34126A66356005A9769 /* CTaskMgr.cpp */,
+				0276C34026A66356005A9769 /* CTaskMgr.h */,
 				0230D8E1269CA9F000EE9AD6 /* main.cpp */,
 			);
 			path = VimToDatasmith;
+			sourceTree = "<group>";
+		};
+		0276C33C26A5D079005A9769 /* UnrealEngine */ = {
+			isa = PBXGroup;
+			children = (
+				0276C33626A383C5005A9769 /* DatasmithHashTools.cpp */,
+				0276C33726A383C5005A9769 /* DatasmithHashTools.h */,
+				0276C33E26A5D079005A9769 /* DatasmithSceneValidator.cpp */,
+				0276C33D26A5D079005A9769 /* DatasmithSceneValidator.h */,
+			);
+			path = UnrealEngine;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -158,10 +186,10 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 020013FB269CA8DF00D6C8A5 /* Build configuration list for PBXNativeTarget "VimToDatasmith" */;
 			buildPhases = (
+				0230D8EA269CAA6D00EE9AD6 /* Copy Datasmith Dylib */,
 				020013F0269CA8DF00D6C8A5 /* Sources */,
 				020013F1269CA8DF00D6C8A5 /* Frameworks */,
 				020013F2269CA8DF00D6C8A5 /* CopyFiles */,
-				0230D8EA269CAA6D00EE9AD6 /* Copy Datasmith Dylib */,
 			);
 			buildRules = (
 			);
@@ -220,7 +248,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "rsync -u \"${DatasmithSDKFolder}/${DATASMITH_DYLIB}\" \"${TARGET_BUILD_DIR}\"\n";
+			shellScript = "rsync -u \"${DatasmithSDKFolder}/${DATASMITH_DYLIB}\" \"${TARGET_BUILD_DIR}\"\ninstall_name_tool -id @loader_path/$DATASMITH_DYLIB \"${DatasmithSDKFolder}/${DATASMITH_DYLIB}\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -230,10 +258,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				022F3654269CB96500623F93 /* DebugTools.cpp in Sources */,
+				02A6021026A9225600158384 /* TimeStat.cpp in Sources */,
+				0276C34226A66356005A9769 /* CTaskMgr.cpp in Sources */,
 				0230D8E3269CA9F000EE9AD6 /* cMat.cpp in Sources */,
 				0230D8E8269CA9F000EE9AD6 /* VimToDatasmith.cpp in Sources */,
 				02E14366269DCF1D00856873 /* CVimToDatasmith.cpp in Sources */,
 				0230D8E9269CA9F000EE9AD6 /* main.cpp in Sources */,
+				0276C33826A383C5005A9769 /* DatasmithHashTools.cpp in Sources */,
+				0276C33F26A5D0D5005A9769 /* DatasmithSceneValidator.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -338,6 +370,12 @@
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"NDEBUG=1",
+					"$(UE_PREPROCESSOR_DEFINITIONS)",
+					"$(VIM_PREPROCESSOR_DEFINITIONS)",
+					"$(inherited)",
+				);
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;

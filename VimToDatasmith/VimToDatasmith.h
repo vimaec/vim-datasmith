@@ -24,6 +24,12 @@ typedef std::string utf8_string;
 #define __printflike(a, b)
 #endif
 
+#if macOS
+#define AutoReleasePool @autoreleasepool
+#else
+#define AutoReleasePool
+#endif
+
 // Format string
 utf8_string VStringFormat(const utf8_t* InFmt, va_list InArgumentsList) __printflike(1, 0);
 ;

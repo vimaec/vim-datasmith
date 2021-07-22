@@ -41,7 +41,7 @@ void Write2Log(EP2DB InMsgLevel, const utf8_string& InMsg);
 #define TestPtr(Ptr)                                  \
     {                                                 \
         if ((Ptr) == nullptr) {                       \
-            Vim2Ds::ThrowPtrNULL(__FILE__, __LINE__); \
+            Vim2Ds::ThrowPtrNull(__FILE__, __LINE__); \
         }                                             \
     }
 

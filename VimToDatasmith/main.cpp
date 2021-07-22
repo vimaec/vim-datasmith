@@ -9,9 +9,7 @@
 
 int main(int argc, const char* argv[]) {
     int result = EXIT_FAILURE;
-    @autoreleasepool {
-        result = Vim2Ds::Convert(argc, argv);
-    }
+    AutoReleasePool { result = Vim2Ds::Convert(argc, argv); }
     return result;
 }
 

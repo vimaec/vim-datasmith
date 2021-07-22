@@ -21,7 +21,7 @@ DISABLE_SDK_WARNINGS_END
 namespace Vim2Ds {
 
 void Usage() {
-    DebugF("Usage: VimToDatasmith VimFilePath.vim [DatasmithFilePath.udatasmith]");
+    DebugF("Usage: VimToDatasmith [-NoHierarchicalInstance] VimFilePath.vim [DatasmithFilePath.udatasmith]");
     exit(EXIT_FAILURE);
 }
 
@@ -57,6 +57,7 @@ int Convert(int argc, const utf8_t* argv[]) {
         vimToDatasmith.ReadVimFile();
         vimToDatasmith.CreateDatasmithScene();
         vimToDatasmith.CreateDatasmithFile();
+        CTaskMgr::DeleteMgr();
         result = EXIT_SUCCESS;
     } catch (const std::exception& e) {
         DebugF("Convert - Exception %s\n", e.what());

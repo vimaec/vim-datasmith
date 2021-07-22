@@ -32,8 +32,10 @@
     _Pragma( "clang diagnostic push" ) \
     _Pragma( "clang diagnostic ignored \"-Wdeprecated-declarations\"" ) \
     _Pragma( "clang diagnostic ignored \"-Wunused-parameter\"" ) \
+	_Pragma( "clang diagnostic ignored \"-Wunused-variable\"" ) \
     _Pragma( "clang diagnostic ignored \"-Wdocumentation\"" ) \
 	_Pragma( "clang diagnostic ignored \"-Wshorten-64-to-32\"" ) \
+	_Pragma( "clang diagnostic ignored \"-Wswitch\"" ) \
     _Pragma( "clang diagnostic ignored \"-Wdefaulted-function-deleted\"" ) \
     _Pragma( "clang diagnostic ignored \"-Winconsistent-missing-override\"" ) \
     _Pragma( "clang diagnostic ignored \"-Wtautological-undefined-compare\"" ) \
