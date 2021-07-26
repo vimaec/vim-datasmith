@@ -45,4 +45,13 @@ class FTimeStat {
     double RealTime;
 };
 
+// Macro to measure code execution time
+#define MeasureTime(name, code)                  \
+    {                                            \
+        FTimeStat name##start;                   \
+        code;                                    \
+        FTimeStat name##end;                     \
+        name##end.PrintDiff(#name, name##start); \
+    }
+
 } // namespace Vim2Ds
