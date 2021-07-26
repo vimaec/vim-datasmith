@@ -4,6 +4,7 @@
 #pragma once
 
 #include "VimToDatasmith.h"
+#include "DebugTools.h"
 
 #include <condition_variable>
 #include <mutex>
@@ -24,21 +25,57 @@ class CTaskMgr {
         virtual ~ITask(){};
     };
 
+    // Lightweight task synchronization mechanism
+    class CTaskJointer;
+
+    // Lightweight joinable task
+    class CJoinableTask : public CTaskMgr::ITask {
+      public:
+        // Destructor
+        virtual ~CJoinableTask();
+
+        // Start the task
+        void Start(CTaskJointer* inTaskJointer);
+
+        virtual void Run() override;
+
+        virtual void RunTask() = 0;
+
+      private:
+        CTaskJointer* mTaskJointer = nullptr;
+    };
+
+    // Lightweight joinable functor task
+    template <class Parameter> class TJoinableFunctorTask;
+
     // Constructor
     CTaskMgr();
 
     // Destructor
     ~CTaskMgr();
 
+    unsigned GetNbProcessors() const { return mNbProcessors; }
+
     // Add task (if inRunNow, the task is run immediatly in current thread)
     void AddTask(ITask* InTask);
+
+    template <class Task> void AddTasks(std::vector<Task>& inTasks) {
+        for (Task& task : inTasks)
+            AddTask(&task);
+    }
 
     // Wait until all task have been processed
     void Join();
 
-    static CTaskMgr* GetMgr();
+    static CTaskMgr& Get();
 
     static void DeleteMgr();
+
+    // Control access on this object (for queue operations)
+    std::mutex mAccessControl;
+
+    // Control queue management
+    std::condition_variable mThreadControlConditionVariable;
 
   private:
     static void RunITask(CTaskMgr* inMgr);
@@ -52,11 +89,7 @@ class CTaskMgr {
     // Fifo tasks queue
     std::queue<ITask*> mTaskQueue;
 
-    // Control access on this object (for queue operations)
-    std::mutex mAccessControl;
-
-    // Control queue management
-    std::condition_variable mThreadControlConditionVariable;
+    unsigned mNbProcessors = 1;
 
     // Number of thread currently running
     volatile unsigned mNbRunning = 0;
@@ -66,6 +99,129 @@ class CTaskMgr {
 
     // False: tasks to run in main threads, true: Task run in thread
     bool mTreadingEnabled;
+};
+
+
+// Lightweight task synchronization mechanism
+class CTaskMgr::CTaskJointer {
+  public:
+    // Constructor
+    CTaskJointer(const char* inName)
+    : mName(inName)
+    , mTaskCount(0)
+    , mGotExceptionCount(0) {}
+
+    // Destructor, insure all tasks are jointed
+    ~CTaskJointer() {
+        Join(false);
+        if (mGotExceptionCount != 0)
+            DebugF("CTaskJointer::~CTaskJointer - %d exceptions hasn't been catched [Jointer=%s]\n", uint32_t(mGotExceptionCount), mName);
+    }
+
+    // A task is added
+    void AddTask(CJoinableTask* inTask) {
+        ++mTaskCount;
+        CTaskMgr::Get().AddTask(inTask);
+    }
+
+    // Join all task before continuing
+    void Join(bool inRethrow = true) {
+        if (mTaskCount != 0) {
+            std::unique_lock<std::mutex> lk(CTaskMgr::Get().mAccessControl);
+            while (mTaskCount != 0)
+                CTaskMgr::Get().mThreadControlConditionVariable.wait(lk, [this] { return mTaskCount != 0; });
+        }
+        if (inRethrow && mGotExceptionCount != 0) {
+            uint32_t gotExceptionCount = mGotExceptionCount;
+            mGotExceptionCount = 0;
+            ThrowMessage("CSmallTask::Join - Rethrow the task exception (%d)", uint32_t(gotExceptionCount));
+        }
+    }
+
+    // A task finish it work
+    void RemoveTask(bool inGotException) {
+        TestAssert(mTaskCount != 0);
+        --mTaskCount;
+        if (inGotException)
+            ++mGotExceptionCount;
+    }
+
+    // How many tasks finish because of an exception?
+    uint32_t TakeException() {
+        uint32_t gotExceptionCount = mGotExceptionCount;
+        mGotExceptionCount = 0;
+        return gotExceptionCount;
+    }
+
+    // The joint name (for debug purpose)
+    const char* GetName() const { return mName; }
+
+  protected:
+    // The joint name (for debug purpose)
+    const char* const mName;
+    
+    // Number of task to be executed
+    std::atomic<uint32_t> mTaskCount;
+    
+    // Number of task that finish with an exception
+    std::atomic<uint32_t> mGotExceptionCount;
+};
+
+// Destructor
+inline CTaskMgr::CJoinableTask::~CJoinableTask() {
+    if (mTaskJointer != nullptr)
+        FatalF("CJoinableTask::~CJoinableTask - Deleting a running task [Jointer=%s]\n", mTaskJointer->GetName());
+}
+
+// Start the task
+inline void CTaskMgr::CJoinableTask::Start(CTaskMgr::CTaskJointer* inTaskJointer) {
+    TestAssert(mTaskJointer == nullptr && inTaskJointer != nullptr);
+    mTaskJointer = inTaskJointer;
+    mTaskJointer->AddTask(this);
+}
+
+// Execute the task
+inline void CTaskMgr::CJoinableTask::Run() {
+    TestPtr(mTaskJointer);
+    try {
+        RunTask();
+        if (mTaskJointer != nullptr) {
+            mTaskJointer->RemoveTask(false);
+            mTaskJointer = nullptr;
+        }
+        delete this;
+    } catch (...) {
+        if (mTaskJointer != nullptr) {
+            mTaskJointer->RemoveTask(true);
+            mTaskJointer = nullptr;
+        }
+        delete this;
+        throw;
+    }
+}
+
+// Lightweight joinable functor task (permit to call a lambda with parameter on a thread)
+template <class Parameter> class CTaskMgr::TJoinableFunctorTask : public CTaskMgr::CJoinableTask {
+  public:
+    // Function type
+    typedef void (*const Functor)(Parameter inParameter);
+
+    // Constructor
+    TJoinableFunctorTask(Functor inFunctor, const Parameter& inParameter)
+    : mFunctor(inFunctor)
+    , mParameter(inParameter) {
+        TestAssert(mFunctor);
+    }
+
+    // Execute the functor
+    virtual void RunTask() override { mFunctor(mParameter); }
+
+  protected:
+    // The functor
+    Functor mFunctor;
+
+    // The functor parameters
+    Parameter mParameter;
 };
 
 } // namespace Vim2Ds

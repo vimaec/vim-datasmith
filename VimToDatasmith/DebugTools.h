@@ -18,6 +18,9 @@ void Printf2DB(EP2DB InMsgLevel, const utf8_t* FormatString, ...) __printflike(2
 // Write string to log file
 void Write2Log(EP2DB InMsgLevel, const utf8_string& InMsg);
 
+// Abnormal end to the program
+[[noreturn]] void Abort();
+
 [[noreturn]] void ThrowMessage(const utf8_t* MessageFormatString, ...);
 [[noreturn]] void ThrowPtrNull(const utf8_t* InFile, int InLineNo);
 [[noreturn]] void ThrowAssertionFail(const utf8_t* InFile, int InLineNo);
@@ -58,6 +61,12 @@ void Write2Log(EP2DB InMsgLevel, const utf8_string& InMsg);
 #else
 #define TestAssertDebugOnly(...) (void)0
 #endif
+
+#define FatalF(...)                                          \
+    {                                                        \
+        Vim2Ds::Printf2DB(Vim2Ds::kP2DB_Debug, __VA_ARGS__); \
+        Vim2Ds::Abort();                                     \
+    }
 
 #define DebugF(...) Vim2Ds::Printf2DB(Vim2Ds::kP2DB_Debug, __VA_ARGS__)
 #define TraceF(...) Vim2Ds::Printf2DB(Vim2Ds::kP2DB_Trace, __VA_ARGS__)

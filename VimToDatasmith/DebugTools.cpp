@@ -151,4 +151,15 @@ void Printf2DB(EP2DB InMsgLevel, const utf8_t* FormatString, ...) {
     }
 }
 
+void Abort() {
+    // Last message log
+    Write2Log(kP2DB_Debug, "Application aborted\n");
+
+    // Flush log
+    // ...
+
+    // Quit application
+    abort();
+}
+
 } // namespace Vim2Ds

@@ -2,7 +2,6 @@
 // Licensed under the MIT License 1.0
 
 #include "CTaskMgr.h"
-#include "DebugTools.h"
 
 #include <chrono>
 #include <stdexcept>
@@ -31,11 +30,11 @@ void CTaskMgr::RunITask(CTaskMgr* inMgr) {
     }
 }
 
-CTaskMgr* CTaskMgr::GetMgr() {
+CTaskMgr& CTaskMgr::Get() {
     if (STaskMgr == nullptr) {
         STaskMgr = new CTaskMgr();
     }
-    return STaskMgr;
+    return *STaskMgr;
 }
 
 void CTaskMgr::DeleteMgr() {
@@ -51,13 +50,13 @@ CTaskMgr::CTaskMgr()
 : mTreadingEnabled(true) {
     if (mTreadingEnabled) {
         // One thread by processor
-        unsigned nbProcessors = std::thread::hardware_concurrency();
-        if (nbProcessors == 0) {
-            nbProcessors = 1;
+        mNbProcessors = std::thread::hardware_concurrency();
+        if (mNbProcessors == 0) {
+            mNbProcessors = 1;
         }
-        mTreads.resize(nbProcessors);
-        mNbRunning = nbProcessors;
-        for (unsigned i = 0; i < nbProcessors; i++) {
+        mTreads.resize(mNbProcessors);
+        mNbRunning = mNbProcessors;
+        for (unsigned i = 0; i < mNbProcessors; i++) {
             mTreads[i].reset(new std::thread(RunITask, this));
         }
     }
