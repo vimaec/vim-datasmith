@@ -41,11 +41,44 @@ void ExtractPathNameExtension(const std::string& inFilePathName, std::string* ou
         *outPath = inFilePathName.substr(0, posName - 1);
 }
 
+#if macOS && !defined(DEBUG)
+#define RedirectOutput 1
+#else
+#define RedirectOutput 0
+#endif
+
 static void InitDatasmith() {
+#if RedirectOutput
+    // Redirect outputs to file InitDatasmith.txt
+    int dupStdout = -1;
+    int dupStderr = -1;
+    int initDatasmithFile = open("InitDatasmith.txt", O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU | S_IRWXG | S_IRWXO);
+    if (initDatasmithFile != -1) {
+        dupStdout = dup(STDOUT_FILENO);
+        dupStderr = dup(STDERR_FILENO);
+        dup2(initDatasmithFile, STDOUT_FILENO);
+        dup2(initDatasmithFile, STDERR_FILENO);
+    }
+#endif
+
     TraceF("InitDatasmith\n");
     FDatasmithExporterManager::FInitOptions Options;
     Options.bSuppressLogs = true; // DEBUG == 0;
     FDatasmithExporterManager::Initialize(Options);
+
+#if RedirectOutput
+    // Restore outputs to standard streams
+    if (dupStdout != -1) {
+        dup2(dupStdout, STDOUT_FILENO);
+        close(dupStdout);
+    }
+    if (dupStderr != -1) {
+        dup2(dupStderr, STDERR_FILENO);
+        close(dupStderr);
+    }
+    if (initDatasmithFile != -1)
+        close(initDatasmithFile);
+#endif
 }
 
 int Convert(int argc, const utf8_t* argv[]) {
