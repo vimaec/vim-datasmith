@@ -41,6 +41,8 @@ namespace g3d
         assoc_face,
         assoc_corner,
         assoc_edge,
+        assoc_subgeometry,
+        assoc_instance,
         assoc_group,
         assoc_all,
         assoc_none,
@@ -121,6 +123,8 @@ namespace g3d
                 { assoc_face,       "face" },
                 { assoc_corner,     "corner" },
                 { assoc_edge,       "edge" },
+                { assoc_subgeometry,"subgeometry" },
+                { assoc_instance,   "instance" },
                 { assoc_group,      "group" },
                 { assoc_all,        "all" },
                 { assoc_none,       "none" },
@@ -302,18 +306,19 @@ namespace g3d
 
         static constexpr const char* FaceMaterialId = "g3d:face:materialid:0:int32:1";
         static constexpr const char* FaceObjectId = "g3d:face:objectid:0:int32:1";
-        static constexpr const char* FaceGroupId = "g3d:face:groupid:0:int32:1";
-        static constexpr const char* FaceNormal = "g3d:vertex:normal:0:float32:3";
+        static constexpr const char* FaceGroup = "g3d:face:group:0:int32:1";
+        static constexpr const char* FaceNormal = "g3d:face:normal:0:float32:3";
         static constexpr const char* FaceSize = "g3d:face:facesize:0:int32:1";
         static constexpr const char* FaceIndexOffset = "g3d:face:indexoffset:0:int32:1";
         static constexpr const char* FaceSelectionWeight = "g3d:face:weight:0:float32:1";
 
-        static constexpr const char* GroupMaterialId = "g3d:group:materialid:0:int32:1";
-        static constexpr const char* GroupObjectId = "g3d:group:objectid:0:int32:1";
-        static constexpr const char* GroupIndexOffset = "g3d:group:indexoffset:0:int32:1";
-        static constexpr const char* GroupVertexOffset = "g3d:group:vertexoffset:0:int32:1";
-        static constexpr const char* GroupNormal = "g3d:vertex:normal:0:float32:3";
-        static constexpr const char* GroupFaceSize = "g3d:group:facesize:0:int32:1";
+        //VIM 1.0
+        static constexpr const char* SubgeometryIndexOffset = "g3d:subgeometry:indexoffset:0:int32:1";
+        static constexpr const char* SubgeometryVertexOffset = "g3d:subgeometry:vertexoffset:0:int32:1";
+        static constexpr const char* InstanceTransform = "g3d:instance:transform:0:float32:16";
+        static constexpr const char* InstanceParent = "g3d:instance:parent:0:int32:1";
+        static constexpr const char* InstanceSubgeometry = "g3d:instance:subgeometry:0:int32:1";
+
 
         // https://docs.thinkboxsoftware.com/products/krakatoa/2.6/1_Documentation/manual/formats/particle_channels.html
         static constexpr const char* PointVelocity = "g3d:vertex:velocity:0:float32:3";
