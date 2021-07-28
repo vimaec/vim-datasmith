@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "VimToDatasmith.h"
 #include "DebugTools.h"
+#include "VimToDatasmith.h"
 
 #include <condition_variable>
 #include <mutex>
@@ -101,7 +101,6 @@ class CTaskMgr {
     bool mTreadingEnabled;
 };
 
-
 // Lightweight task synchronization mechanism
 class CTaskMgr::CTaskJointer {
   public:
@@ -159,10 +158,10 @@ class CTaskMgr::CTaskJointer {
   protected:
     // The joint name (for debug purpose)
     const char* const mName;
-    
+
     // Number of task to be executed
     std::atomic<uint32_t> mTaskCount;
-    
+
     // Number of task that finish with an exception
     std::atomic<uint32_t> mGotExceptionCount;
 };
