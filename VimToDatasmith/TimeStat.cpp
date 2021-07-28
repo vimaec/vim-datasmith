@@ -1,7 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "TimeStat.h"
-#include "DebugTools.h"
 
 #if macOS
 #include <sys/time.h>
@@ -32,7 +31,7 @@ void FTimeStat::AddDiff(const FTimeStat& InOther) {
 }
 
 // Print time differences
-void FTimeStat::PrintDiff(const char* InStatLabel, const FTimeStat& InStart) {
+void FTimeStat::PrintDiff(const char* InStatLabel, const FTimeStat& InStart, EP2DB inMsgLevel) {
     double CpuSeconds = CpuTime - InStart.CpuTime;
     double RealSeconds = RealTime - InStart.RealTime;
     if (RealSeconds < 0) // Before and after midnight ?
@@ -40,11 +39,11 @@ void FTimeStat::PrintDiff(const char* InStatLabel, const FTimeStat& InStart) {
         RealSeconds += 24 * 60 * 60;
     }
     if (RealSeconds >= 100.0)
-        TraceF("Seconds for %s cpu=%.0lfs, real=%.0lfs\n", InStatLabel, CpuSeconds, RealSeconds);
+        Vim2Ds::Printf2DB(inMsgLevel, "Seconds for %s cpu=%.0lfs, real=%.0lfs\n", InStatLabel, CpuSeconds, RealSeconds);
     else if (CpuSeconds >= 100.0)
-        TraceF("Seconds for %s cpu=%.0lfs, real=%.2lgs\n", InStatLabel, CpuSeconds, RealSeconds);
+        Vim2Ds::Printf2DB(inMsgLevel, "Seconds for %s cpu=%.0lfs, real=%.2lgs\n", InStatLabel, CpuSeconds, RealSeconds);
     else
-        TraceF("Seconds for %s cpu=%.2lgs, real=%.2lgs\n", InStatLabel, CpuSeconds, RealSeconds);
+        Vim2Ds::Printf2DB(inMsgLevel, "Seconds for %s cpu=%.2lgs, real=%.2lgs\n", InStatLabel, CpuSeconds, RealSeconds);
 }
 
 // Tool get current real time clock

@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "DebugTools.h"
 #include "VimToDsWarningsDisabler.h"
 
 namespace Vim2Ds {
@@ -25,7 +26,7 @@ class FTimeStat {
     void AddDiff(const FTimeStat& InOther);
 
     // Print time differences
-    void PrintDiff(const char* InStatLabel, const FTimeStat& InStart);
+    void PrintDiff(const char* InStatLabel, const FTimeStat& InStart, EP2DB inMsgLevel = kP2DB_Trace);
 
     // Return the ReStart cpu time
     double GetCpuTime() const { return CpuTime; }
@@ -46,12 +47,12 @@ class FTimeStat {
 };
 
 // Macro to measure code execution time
-#define MeasureTime(name, code)                  \
-    {                                            \
-        FTimeStat name##start;                   \
-        code;                                    \
-        FTimeStat name##end;                     \
-        name##end.PrintDiff(#name, name##start); \
+#define MeasureTime(name, code, msgLevel)                  \
+    {                                                      \
+        FTimeStat name##start;                             \
+        code;                                              \
+        FTimeStat name##end;                               \
+        name##end.PrintDiff(#name, name##start, msgLevel); \
     }
 
 } // namespace Vim2Ds

@@ -121,6 +121,18 @@ void ThrowWinError(unsigned long InWinErr, const utf8_t* InFile, int InLineNo) {
 void Write2Log(EP2DB /*InMsgLevel*/, const utf8_string& /*InMsg*/) {
 }
 
+#ifdef DEBUG
+static EP2DB SPrintLevel = kP2DB_Trace;
+#else
+static EP2DB SPrintLevel = kP2DB_ReportAndDebug;
+#endif
+
+EP2DB SetPrintLevel(EP2DB inLevel) {
+    EP2DB printLevel = SPrintLevel;
+    SPrintLevel = inLevel;
+    return printLevel;
+}
+
 // Print to debugger
 void Printf2DB(EP2DB InMsgLevel, const utf8_t* FormatString, ...) {
     try {
@@ -129,19 +141,21 @@ void Printf2DB(EP2DB InMsgLevel, const utf8_t* FormatString, ...) {
         utf8_string FormattedMessage(VStringFormat(FormatString, argptr));
         va_end(argptr);
         Write2Log(InMsgLevel, FormattedMessage);
+        if (InMsgLevel <= SPrintLevel) {
 #if PLATFORM_WINDOWS
-        std::wstring WStr(UTF8_TO_TCHAR(FormattedMessage.c_str()));
-        OutputDebugStringW(WStr.c_str());
-        if (InMsgLevel == kP2DB_Debug) {
-            fputws(WStr.c_str(), stderr);
-        } else if (InMsgLevel <= kP2DB_Trace) {
-            fputws(WStr.c_str(), stdout);
-        }
+            std::wstring WStr(UTF8_TO_TCHAR(FormattedMessage.c_str()));
+            OutputDebugStringW(WStr.c_str());
+            if (InMsgLevel == kP2DB_Debug) {
+                fputws(WStr.c_str(), stderr);
+            } else if (InMsgLevel <= kP2DB_Trace) {
+                fputws(WStr.c_str(), stdout);
+            }
 #else
-        if (fwrite(FormattedMessage.c_str(), 1, FormattedMessage.size(), stdout) != FormattedMessage.size()) {
-            printf("Printf2DB - Write error %d\n", errno);
-        }
+            if (fwrite(FormattedMessage.c_str(), 1, FormattedMessage.size(), stdout) != FormattedMessage.size()) {
+                printf("Printf2DB - Write error %d\n", errno);
+            }
 #endif
+        }
     } catch (...) {
 #if PLATFORM_WINDOWS
         OutputDebugStringW(L"Printf2DB - Catch an exception\n");
