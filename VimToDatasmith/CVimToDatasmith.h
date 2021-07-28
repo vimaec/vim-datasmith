@@ -32,35 +32,40 @@ class FDatasmithHash;
 
 namespace Vim2Ds {
 
-inline const cMat4& ToMat4(const Vim::SceneNode& inSceneNode) {
-    return *reinterpret_cast<const cMat4*>(inSceneNode.mTransform);
-}
+enum InstanceIndex : uint32_t { kNoInstance = (uint32_t)-1 };
 
-#define UseDatasmithHierarchicalInstance \
-    0 // IDatasmithHierarchicalInstancedStaticMeshActorElement currently not
-      // supported by Tm
+enum GeometryIndex : uint32_t { kNoGeometry = (uint32_t)-1 };
 
-enum ESpecialValues {
-    kNoParent = -1,
-    kNoGeometry = -1,
-    kNoInstance = -1,
-    kInvalidIndex = -1,
-};
+enum ParentIndex : uint32_t { kNoParent = (uint32_t)-1 };
+
+enum VertexIndex : uint32_t { kInvalidVertex = (uint32_t)-1 };
+
+enum GroupIndex : uint32_t { kInvalidGroup = (uint32_t)-1 };
+
+enum MaterialId : uint32_t { kInvalidMaterial = (uint32_t)-1 };
+
+enum IndiceIndex : uint32_t { kInvalidIndice = (uint32_t)-1 };
+
+enum FaceIndex : uint32_t { kInvalidFace = (uint32_t)-1 }; // FaceIndex is same as Indices index / 3
+
+enum StringIndex : uint32_t { kInvalidString = (uint32_t)-1 };
 
 // Basic vector class
-template <class C> class TVector {
+template <class C, class Indexor = std::size_t> class TVector {
   public:
+    virtual ~TVector(){};
+
     // Return the size
-    size_t Count() const { return mCount; }
+    Indexor Count() const { return Indexor(mCount); }
 
     // Access to element  by it's index
-    const C& operator[](size_t inIndex) const {
+    const C& operator[](Indexor inIndex) const {
         TestAssertDebugOnly(inIndex < mCount);
         return mData[inIndex];
     }
 
     // Access to element  by it's index
-    C& operator[](size_t inIndex) {
+    C& operator[](Indexor inIndex) {
         TestAssertDebugOnly(mData != nullptr && inIndex < mCount);
         return mData[inIndex];
     }
@@ -68,7 +73,7 @@ template <class C> class TVector {
     // Print the content of this vector
     void Print(const utf8_t* inDataName, const utf8_t* inSeparator = "\n\t\t") {
         TraceF("\t%s Count=%lu", inDataName, mCount);
-        for (size_t index = 0; index < mCount; ++index)
+        for (Indexor index = Indexor(0); index < mCount; index = Indexor(index + 1))
             TraceF("%s%lu %s", inSeparator, index, ToUtf8(mData[index]));
         TraceF("\n");
     }
@@ -80,8 +85,11 @@ template <class C> class TVector {
 
 // Vector class that refers to attribute content.
 /* Doesn't copy the attribute's content */
-template <class C> class TAttributeVector : public TVector<C> {
+template <class C, class Indexor = std::size_t> class TAttributeVector : public TVector<C, Indexor> {
   public:
+    TAttributeVector() {}
+    TAttributeVector(const g3d::Attribute& inAttr) { Initialize(inAttr); }
+
     void Initialize(const g3d::Attribute& inAttr) {
         size_t dataSize = inAttr.byte_size();
         this->mCount = dataSize / sizeof(C);
@@ -91,8 +99,11 @@ template <class C> class TAttributeVector : public TVector<C> {
 };
 
 // Vector that allocate it's content
-template <class C> class TAllocatedVector : public TVector<C> {
+template <class C, class Indexor = std::size_t> class TAllocatedVector : public TVector<C, Indexor> {
   public:
+    TAllocatedVector() {}
+    TAllocatedVector(Indexor inCount) { Allocate(inCount); }
+
     // Destructor
     ~TAllocatedVector() { Clear(); }
 
@@ -104,7 +115,7 @@ template <class C> class TAllocatedVector : public TVector<C> {
     }
 
     // Allocate the required number of elements
-    void Allocate(size_t inCount) {
+    void Allocate(Indexor inCount) {
         TestAssert(this->mData == nullptr);
         this->mCount = inCount;
         this->mData = new C[this->mCount]{};
@@ -141,10 +152,37 @@ class CMD5Hash {
     size_t m[2];
 };
 
+class CNamePtr {
+  public:
+    CNamePtr(const TCHAR* inName = nullptr)
+    : mName(inName) {}
+
+    operator const TCHAR*() const { return mName; }
+
+    bool operator==(const CNamePtr& inOther) const {
+        if (mName == inOther.mName)
+            return true;
+        if (mName == nullptr || inOther.mName == nullptr)
+            return false;
+        return FCString::Strcmp(mName, inOther.mName);
+    }
+
+    struct SHasher {
+        std::size_t operator()(const CNamePtr& inName) const {
+            int32 l = FCString::Strlen(inName.mName);
+            int32 half = (l + 1) >> 1;
+            return std::size_t(FCrc::Strihash_DEPRECATED(l - half, inName.mName + half)) << 32 | FCrc::Strihash_DEPRECATED(half, inName.mName);
+        }
+    };
+
+  private:
+    const TCHAR* mName;
+};
+
 // Converter class
 class CVimToDatasmith {
   public:
-    typedef std::unordered_map<uint32_t, int32_t> MapVimMaterialIdToDsMeshMaterialIndice;
+    typedef std::unordered_map<MaterialId, int32_t> MapVimMaterialIdToDsMeshMaterialIndice;
 
     // Constructor
     CVimToDatasmith();
@@ -165,33 +203,36 @@ class CVimToDatasmith {
     void CreateDatasmithFile();
 
     // Return the material name
-    const TCHAR* GetMaterialName(uint32_t inVimMaterialId) const;
+    const TCHAR* GetMaterialName(MaterialId inVimMaterialId) const;
 
     // Compute the hash of the materials used
     CMD5Hash ComputeHash(const MapVimMaterialIdToDsMeshMaterialIndice& inVimMaterialIdToDsMeshMaterialIndice) const;
 
-    const utf8_t* GetVimString(int inIndex) const {
-        TestAssert((unsigned)inIndex < mVimScene.mStrings.size());
+    const utf8_t* GetVimString(StringIndex inIndex) const {
+        TestAssert(inIndex < mVimScene.mStrings.size());
         return reinterpret_cast<const utf8_t*>(mVimScene.mStrings[inIndex]);
     }
 
     const utf8_t* GetVimString(const std::vector<int>& indexStringArray, size_t inIndex) const {
         const utf8_t* theString = "";
         if (indexStringArray.size() > inIndex)
-            theString = GetVimString(indexStringArray[inIndex]);
+            theString = GetVimString(StringIndex(indexStringArray[inIndex]));
         return theString;
     }
 
   private:
+    class CTextureEntry;
+    CTextureEntry* CreateTexture(const utf8_t* inTextureName);
+
     // Create datasmith materials from Vim ones
     void CreateMaterials();
 
     // Initialize the converter from Vim scene
     void ProcessGeometry();
 
-    void ProcessDefinitions();
+    void ConvertObsoleteSceneNode();
 
-    // Create all mesh actors from Vim scene nodes
+    // Create all definitions
     void ProcessInstances();
 
     // Create all actors
@@ -211,8 +252,10 @@ class CVimToDatasmith {
     void PrintStats();
 
     // Convert geometry to Datasmith Mesh
-    void ConvertGeometryToDatasmithMesh(int32 geometryIndex, FDatasmithMesh* outMesh,
+    void ConvertGeometryToDatasmithMesh(GeometryIndex geometryIndex, FDatasmithMesh* outMesh,
                                         MapVimMaterialIdToDsMeshMaterialIndice* outVimMaterialIdToDsMeshMaterialIndice);
+
+    void CreateAllMetaDatas();
 
     // Extracted from parameters
     bool mNoHierarchicalInstance = false;
@@ -220,19 +263,22 @@ class CVimToDatasmith {
     std::string mDatasmithFolderPath;
     std::string mDatasmithFileName;
 
+    const std::vector<int>* mVimNodeToElement = nullptr;
+
     // Material's collected informations
     class MaterialEntry {
       public:
         // Constructor
-        MaterialEntry(int32_t inVimId);
+        MaterialEntry(MaterialId inVimId);
 
         // Copy constructor required to be in a std::vector
         MaterialEntry(const MaterialEntry& inOther);
 
         std::atomic<int32_t> mCount; // Number of mesh using this materials
-        int32_t mVimId; // Vim material id
+        MaterialId mVimId; // Vim material id
         cVec4 mColor; // Vim color
         cVec2 mParams; // Vim glossiness and smoothness
+        CTextureEntry* mTexture = nullptr;
 
         TSharedRef<IDatasmithUEPbrMaterialElement> mMaterialElement; // Datasmith version of the materials
     };
@@ -241,29 +287,85 @@ class CVimToDatasmith {
     std::vector<MaterialEntry> mMaterials;
 
     // Index permitting Vim material to our material entry index
-    std::unordered_map<uint32_t, size_t> mVimToDatasmithMaterialMap;
+    std::unordered_map<MaterialId, size_t> mVimToDatasmithMaterialMap;
+
+    // Material's collected informations
+    class CTextureEntry {
+      public:
+        CTextureEntry(CVimToDatasmith* inVimToDatasmith, const bfast::Buffer& inImageBuffer);
+
+        const TCHAR* GetName() const { return *mDatasmithName; }
+
+        const TCHAR* GetLabel() const { return *mDatasmithLabel; }
+
+        void CopyTextureInAssets();
+
+        void AddToScene();
+
+      private:
+        CVimToDatasmith* const mVimToDatasmith;
+        const bfast::Buffer& mImageBuffer;
+        FString mDatasmithName;
+        FString mDatasmithLabel;
+        TSharedPtr<IDatasmithTextureElement> mDatasmithTexture;
+    };
+
+    std::unordered_map<utf8_string, std::unique_ptr<CTextureEntry>> mVimTextureToTextureMap;
+
+    // Material's collected informations
+    class CActorEntry {
+      public:
+        CActorEntry() {}
+
+        bool HasElement() const { return mActorElement != nullptr; }
+
+        void SetActor(IDatasmithActorElement* inActorElement) {
+            TestAssert(mActorElement == nullptr);
+            mActorElement = inActorElement;
+        }
+
+        IDatasmithActorElement* GetActorElement() { return mActorElement; }
+
+        IDatasmithMetaDataElement& GetOrCreateMetadataElement(CVimToDatasmith* inVimToDatasmith);
+
+      private:
+        IDatasmithActorElement* mActorElement = nullptr;
+        IDatasmithMetaDataElement* mMetaDataElement = nullptr;
+    };
+    std::vector<CActorEntry> mVecNodesToActors;
 
     // Map Vim geometry index to datasmith mesh
-    typedef std::unordered_map<int32_t, TSharedPtr<IDatasmithMeshElement>> GeometryToDatasmithMeshMap;
+    typedef std::unordered_map<GeometryIndex, TSharedPtr<IDatasmithMeshElement>> GeometryToDatasmithMeshMap;
     GeometryToDatasmithMeshMap mGeometryToDatasmithMeshMap;
 
     // Vim scene data
     Vim::Scene mVimScene;
-    TAttributeVector<cVec3> mPositions;
-    TAttributeVector<uint32_t> mIndices;
-    TAttributeVector<uint32_t> mGroupIndexOffets;
-    TAttributeVector<uint32_t> mGroupVertexOffets;
-    TAttributeVector<uint32_t> mMaterialIds;
+    TAttributeVector<cVec3, VertexIndex> mPositions;
+    TAttributeVector<VertexIndex, IndiceIndex> mIndices;
+    TAttributeVector<IndiceIndex, GeometryIndex> mGroupIndexOffets;
+    TAttributeVector<VertexIndex, GeometryIndex> mGroupVertexOffets;
+    TAttributeVector<MaterialId, FaceIndex> mMaterialIds;
+    std::unique_ptr<TVector<cMat4, InstanceIndex>> mInstancesTransform;
+    std::unique_ptr<TVector<ParentIndex, InstanceIndex>> mInstancesParent;
+    std::unique_ptr<TVector<GeometryIndex, InstanceIndex>> mInstancesSubgeometry;
+
+    // Unprocessed vim data
     TAttributeVector<uint32_t> mObjectIds;
     TAttributeVector<float> mVertexUVs;
 
     // Working/Computed data
-    TAllocatedVector<uint32_t> mGroupIndexCounts;
-    TAllocatedVector<cVec3> mNormals;
+    TAllocatedVector<IndiceIndex, GeometryIndex> mGroupIndexCounts;
+    TAllocatedVector<cVec3, VertexIndex> mNormals;
 
     // Datasmith scene and assets output path
     TSharedPtr<IDatasmithScene> mDatasmithScene;
     FString mOutputPath;
+
+#if 0
+    size_t mNodesCount = 0;
+    size_t GetNodesCount() const { return mNodesCount; }
+#else
+#endif
 
     // Conversion classes
 
@@ -343,10 +445,10 @@ class CVimToDatasmith {
     class CGeometryEntry : CTaskMgr::ITask {
       public:
         // Constructor
-        CGeometryEntry(CVimToDatasmith* inVimToDatasmith, const Vim::SceneNode& inDefinition);
+        CGeometryEntry(CVimToDatasmith* inVimToDatasmith, GeometryIndex inGeometry, InstanceIndex inDefinition);
 
         // Add an instance.
-        void AddInstance(const Vim::SceneNode* inInstance);
+        void AddInstance(InstanceIndex inInstance);
 
         // Create Datasmith actors
         void CreateActors();
@@ -356,7 +458,7 @@ class CVimToDatasmith {
         void Run();
 
         // Create an actor for the specified node
-        void CreateActor(const Vim::SceneNode& inSceneNode);
+        void CreateActor(InstanceIndex inInstance);
 
         // Create an efficient actor for the specified instance
         void CreateHierarchicalInstancesActor();
@@ -366,8 +468,9 @@ class CVimToDatasmith {
 
         CVimToDatasmith* const mVimToDatasmith; // The converter
         CMeshElement* mMeshElement = nullptr; // The mesh element that is geometry and affected material.
-        const Vim::SceneNode& mDefinition; // First instance is considered as the definition
-        std::unique_ptr<std::vector<const Vim::SceneNode*>> mInstances; // All other instances (exclude definition one)
+        GeometryIndex mGeometry = GeometryIndex::kNoGeometry;
+        InstanceIndex mDefinition = InstanceIndex::kNoInstance; // First instance is considered as the definition
+        std::unique_ptr<std::vector<InstanceIndex>> mInstances; // All other instances (exclude definition one)
     };
 
     std::vector<std::unique_ptr<CGeometryEntry>> mGeometryEntries; // vector of geometries
