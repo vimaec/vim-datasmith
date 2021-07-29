@@ -2,6 +2,7 @@
 // Licensed under the MIT License 1.0
 
 #include "CVimToDatasmith.h"
+#include "CConvertVimToDatasmith.h"
 
 #include "DatasmithHashTools.h"
 #include "DebugTools.h"
@@ -37,27 +38,194 @@ bool CreateDirectoryW(wchar_t* lpPathName, void* lpSecurityAttributes);
 
 namespace Vim2Ds {
 
+
+// Material's collected informations
+class CVimToDatasmith::CMaterialEntry {
+public:
+    // Constructor
+    CMaterialEntry(MaterialId inVimId);
+    
+    // Copy constructor required to be in a std::vector
+    CMaterialEntry(const CMaterialEntry& inOther);
+    
+    std::atomic<int32_t> mCount; // Number of mesh using this materials
+    MaterialId mVimId; // Vim material id
+    cVec4 mColor; // Vim color
+    cVec2 mParams; // Vim glossiness and smoothness
+    CTextureEntry* mTexture = nullptr;
+    
+    TSharedRef<IDatasmithUEPbrMaterialElement> mMaterialElement; // Datasmith version of the materials
+};
+
+
+// Material's collected informations
+class CVimToDatasmith::CTextureEntry {
+public:
+    CTextureEntry(CVimToDatasmith* inVimToDatasmith, const bfast::Buffer& inImageBuffer);
+    
+    const TCHAR* GetName() const { return *mDatasmithName; }
+    
+    const TCHAR* GetLabel() const { return *mDatasmithLabel; }
+    
+    void CopyTextureInAssets();
+    
+    void AddToScene();
+    
+private:
+    CVimToDatasmith* const mVimToDatasmith;
+    const bfast::Buffer& mImageBuffer;
+    FString mDatasmithName;
+    FString mDatasmithLabel;
+    TSharedPtr<IDatasmithTextureElement> mDatasmithTexture;
+};
+
+
+// Material's collected informations
+class CVimToDatasmith::CActorEntry {
+public:
+    CActorEntry() {}
+    
+    bool HasElement() const { return mActorElement.IsValid(); }
+    
+    void SetActor(const TSharedRef<IDatasmithActorElement>& inActorElement, NodeIndex inNodeIndex) {
+        if (inNodeIndex < mLowestNodeIndex)
+            mActorElement = inActorElement;
+        TestAssert(mActorElement.IsValid());
+    }
+    
+    IDatasmithActorElement* GetActorElement() { return mActorElement.Get(); }
+    
+    IDatasmithMetaDataElement& GetOrCreateMetadataElement(CVimToDatasmith* inVimToDatasmith);
+    
+    void AddTag(const utf8_t* inTag, std::vector<int>& inVector, ElementIndex inIndex);
+    
+private:
+    TSharedPtr<IDatasmithActorElement> mActorElement;
+    TSharedPtr<IDatasmithMetaDataElement> mMetaDataElement;
+    NodeIndex mLowestNodeIndex = NodeIndex::kNoNode;
+};
+
+
+// MeshDefinition
+// name = md5 of mesh data
+// Definition is use [1..N] MeshElement
+class CVimToDatasmith::CMeshDefinition {
+public:
+    // Constructor
+    CMeshDefinition();
+    
+    // Initialize the mesh
+    CMeshElement* Initialize(FDatasmithMesh& inMesh, const MapVimMaterialIdToDsMeshMaterialIndice& inVimMaterialIdToDsMeshMaterialIndice,
+                             CVimToDatasmith& inVimToDatasmith);
+    
+    // Return a mesh element for the material list specified.
+    CMeshElement* GetOrCreateMeshElement(const MapVimMaterialIdToDsMeshMaterialIndice& inVimMaterialIdToDsMeshMaterialIndice,
+                                         CVimToDatasmith& inVimToDatasmith);
+    
+    // Return the first element
+    const CMeshElement* GetFirstElement() const { return mFirstElement; }
+    
+private:
+    // We keep the first created mesh element to reuse it's values (name, dimensions) for next ones
+    CMeshElement* mFirstElement = nullptr;
+    std::unordered_map<CMD5Hash, std::unique_ptr<CMeshElement>, CMD5Hash::SHasher> mMapMaterialMD5ToMeshElement;
+};
+
+
+// MeshElement
+class CVimToDatasmith::CMeshElement {
+public:
+    // Constructor
+    CMeshElement(const CMeshDefinition& inMeshDefinition, const MapVimMaterialIdToDsMeshMaterialIndice& inVimMaterialIdToDsMeshMaterialIndice,
+                 const CMD5Hash& inMaterialsMD5Hash);
+    
+    // Called in the thread building our mesh assets
+    void InitAsFirstElement(const TSharedPtr<IDatasmithMeshElement>& inFirstElement);
+    
+    // Copy first element mesh definition to this one.
+    void InitWithFirstElement(const CMeshElement& inFirstElement);
+    
+    // Set mesh element with the materials
+    void InitMeshMaterials(const CVimToDatasmith& inVimToDatasmith);
+    
+    // Return the mesh element (may create it)
+    const IDatasmithMeshElement* GetMeshElement(const CVimToDatasmith& inVimToDatasmith) {
+        if (mMeshElement.IsValid())
+            return mMeshElement.Get();
+        const CMeshElement* firstElement = mMeshDefinition.GetFirstElement();
+        if (firstElement != nullptr && firstElement->mMeshElement.IsValid()) {
+            InitWithFirstElement(*firstElement);
+            if (mMeshElement.IsValid()) {
+                InitMeshMaterials(inVimToDatasmith);
+                std::unique_lock<std::mutex> lk(inVimToDatasmith.mConverter.GetSceneAccess());
+                inVimToDatasmith.mConverter.GetScene()->AddMesh(mMeshElement);
+                return mMeshElement.Get();
+            }
+        }
+        return nullptr;
+    }
+    
+private:
+    const CMeshDefinition& mMeshDefinition; // The mesh definition (asset)
+    MapVimMaterialIdToDsMeshMaterialIndice mVimMaterialIdToDsMeshMaterialIndice; // Vim material collected when creating mesh
+    CMD5Hash mMaterialsMD5Hash; // Hash materials from the list over.
+    
+    TSharedPtr<IDatasmithMeshElement> mMeshElement; // The created mesh element (== mesh definition + materials used)
+};
+
+
+// GeometryEntry is a definition and an array of instances
+class CVimToDatasmith::CGeometryEntry : CTaskMgr::ITask {
+public:
+    // Constructor
+    CGeometryEntry(CVimToDatasmith* inVimToDatasmith, GeometryIndex inGeometry, NodeIndex inDefinition);
+    
+    // Add an instance.
+    void AddInstance(NodeIndex inInstance);
+    
+    // Create Datasmith actors
+    void CreateActors();
+    
+private:
+    // Process the node's geometry (create datasmith mesh)
+    void Run();
+    
+    void ConvertGeometryToDatasmithMesh(FDatasmithMesh* outMesh, MapVimMaterialIdToDsMeshMaterialIndice* outVimMaterialIdToDsMeshMaterialIndice);
+
+    void AddActor(const TSharedRef<IDatasmithMeshActorElement>& inActor, NodeIndex inInstance);
+    
+    // Create an actor for the specified node
+    void CreateActor(NodeIndex inInstance);
+    
+    // Create an efficient actor for the specified instance
+    void CreateHierarchicalInstancesActor();
+    
+    // Create the actor name based on it's content (take care of duplicates)
+    FString HashToName(Datasmith::FDatasmithHash& hasher, NodeIndex inInstance) const;
+    
+    CVimToDatasmith* const mVimToDatasmith; // The converter
+    CMeshElement* mMeshElement = nullptr; // The mesh element that is geometry and affected material.
+    GeometryIndex mGeometry = GeometryIndex::kNoGeometry;
+    NodeIndex mDefinition = NodeIndex::kNoNode; // First instance is considered as the definition
+    std::unique_ptr<std::vector<NodeIndex>> mInstances; // All other instances (exclude definition one)
+};
+
+
 // Constructor
-CVimToDatasmith::MaterialEntry::MaterialEntry(MaterialId inVimId)
+CVimToDatasmith::CMaterialEntry::CMaterialEntry(MaterialId inVimId)
 : mCount(0)
 , mVimId(inVimId)
 , mMaterialElement(FDatasmithSceneFactory::CreateUEPbrMaterial(UTF8_TO_TCHAR(Utf8StringFormat("%u", inVimId).c_str()))) {
 }
 
 // Copy constructor required to be in a std::vector
-CVimToDatasmith::MaterialEntry::MaterialEntry(const MaterialEntry& inOther)
+CVimToDatasmith::CMaterialEntry::CMaterialEntry(const CMaterialEntry& inOther)
 : mCount((int32_t)inOther.mCount)
 , mVimId(inOther.mVimId)
 , mMaterialElement(inOther.mMaterialElement)
 , mColor(inOther.mColor)
 , mParams(inOther.mParams)
 , mTexture(inOther.mTexture) {
-}
-
-// Constructor
-CVimToDatasmith::CVimToDatasmith() {
-    mStartTimeStat.BeginNow();
-    mGeometryToDatasmithMeshMap[GeometryIndex::kNoGeometry] = TSharedPtr<IDatasmithMeshElement>();
 }
 
 IDatasmithMetaDataElement& CVimToDatasmith::CActorEntry::GetOrCreateMetadataElement(CVimToDatasmith* inVimToDatasmith) {
@@ -67,123 +235,21 @@ IDatasmithMetaDataElement& CVimToDatasmith::CActorEntry::GetOrCreateMetadataElem
         mMetaDataElement = FDatasmithSceneFactory::CreateMetaData(*metadataName);
         mMetaDataElement->SetAssociatedElement(mActorElement);
 
-        std::unique_lock<std::mutex> lk(inVimToDatasmith->mDatasmithSceneAccessControl);
-        inVimToDatasmith->mDatasmithScene->AddMetaData(mMetaDataElement);
+        std::unique_lock<std::mutex> lk(inVimToDatasmith->mConverter.GetSceneAccess());
+        inVimToDatasmith->mConverter.GetScene()->AddMetaData(mMetaDataElement);
     }
     return *mMetaDataElement;
 }
 
+// Constructor
+CVimToDatasmith::CVimToDatasmith(CConvertVimToDatasmith* inConvertVimToDatasmith)
+: mVim(inConvertVimToDatasmith->GetVim())
+, mConverter(*inConvertVimToDatasmith) {
+    mGeometryToDatasmithMeshMap[GeometryIndex::kNoGeometry] = TSharedPtr<IDatasmithMeshElement>();
+}
+
 // Destructor
 CVimToDatasmith::~CVimToDatasmith() {
-}
-
-// Parse parameters to get Vim file path and datasmith file path
-void CVimToDatasmith::GetParameters(int argc, const utf8_t* const* argv) {
-    if (argc > 1 && argv[1][0] == '-') {
-        if (strcmp(argv[1], "-NoHierarchicalInstance") == 0) {
-            mNoHierarchicalInstance = true;
-            --argc;
-            ++argv;
-        }
-    }
-
-    if (argc < 2 || argc > 3)
-        Usage();
-
-    // Process input vim file argument
-    mVimFilePath = argv[1];
-
-    std::string vimPath;
-    std::string vimName;
-    std::string vimExtension;
-    ExtractPathNameExtension(mVimFilePath, &vimPath, &vimName, &vimExtension);
-
-    if (vimExtension != ".vim")
-        ThrowMessage("Invalid vim file name \"%s\"", mVimFilePath.c_str());
-
-    // Process output datassmith file argument
-    if (argc > 2) {
-        std::string datasmithExtension;
-        ExtractPathNameExtension(argv[2], &mDatasmithFolderPath, &mDatasmithFileName, &datasmithExtension);
-        if (datasmithExtension.size() != 0 && datasmithExtension != ".udatasmith")
-            ThrowMessage("Invalid datasmith file name \"%s\"", argv[2]);
-        if (mDatasmithFileName.size() == 0)
-            mDatasmithFileName = vimName;
-    } else {
-        mDatasmithFolderPath = vimPath;
-        mDatasmithFileName = vimName;
-    }
-
-    mOutputPath = UTF8_TO_TCHAR((mDatasmithFolderPath + "/" + mDatasmithFileName + "_Assets").c_str());
-
-    DebugF("Convert \"%s\" -> \"%s\"\n", mVimFilePath.c_str(), (mDatasmithFolderPath + "/" + mDatasmithFileName + ".udatasmith").c_str());
-}
-
-// Initialize the Vim scene with the vim file
-void CVimToDatasmith::ReadVimFile() {
-    mReadTimeStat.BeginNow();
-    Vim::VimErrorCodes vimReadResult = mVimScene.ReadFile(mVimFilePath);
-    if (vimReadResult != Vim::VimErrorCodes::Success)
-        ThrowMessage("CVimToDatasmith::ReadVimFile - ReadFile return error %d", vimReadResult);
-    mReadTimeStat.FinishNow();
-#if 0
-    DumpAssets();
-#endif
-#if 0
-    DumpEntitiesTables();
-#endif
-}
-
-inline void DumpIndexColumn(const utf8_t* inTableName, const utf8_t* inColumnName, const std::vector<int>& inColumn) {
-    for (size_t i = 0; i < inColumn.size(); ++i)
-        TraceF("\t[\"%s\"][\"%s\"][%lu] %d\n", inTableName, inColumnName, i, inColumn[i]);
-}
-
-void CVimToDatasmith::DumpStringColumn(const utf8_t* inTableName, const utf8_t* inColumnName, const std::vector<int>& inColumn) const {
-    for (size_t i = 0; i < inColumn.size(); ++i)
-        TraceF("\t[\"%s\"][\"%s\"][%lu] \"%s\"\n", inTableName, inColumnName, i, GetVimString(StringIndex(inColumn[i])));
-}
-
-inline void DumpNumericColumn(const utf8_t* inTableName, const utf8_t* inColumnName, const std::vector<double>& inColumn) {
-    for (size_t i = 0; i < inColumn.size(); ++i)
-        TraceF("\t[\"%s\"][\"%s\"][%lu] %lf\n", inTableName, inColumnName, i, inColumn[i]);
-}
-
-void CVimToDatasmith::DumpTable(const utf8_t* inMsg, const Vim::EntityTable& inTable, bool inContent) const {
-    for (auto iter : inTable.mIndexColumns) {
-        TraceF("[\"%s\"] - mIndexColumns[%s] size=%lu\n", inMsg, iter.first.c_str(), iter.second.size());
-        if (inContent)
-            DumpIndexColumn(inMsg, iter.first.c_str(), iter.second);
-    }
-    for (auto iter : inTable.mStringColumns) {
-        TraceF("[\"%s\"] - mStringColumns[%s] size=%lu\n", inMsg, iter.first.c_str(), iter.second.size());
-        if (inContent)
-            DumpStringColumn(inMsg, iter.first.c_str(), iter.second);
-    }
-    for (auto iter : inTable.mNumericColumns) {
-        TraceF("[\"%s\"] - mNumericColumns[%s] size=%lu\n", inMsg, iter.first.c_str(), iter.second.size());
-        if (inContent)
-            DumpNumericColumn(inMsg, iter.first.c_str(), iter.second);
-    }
-    int previousEntityId = -1;
-    for (auto& property : inTable.mProperties) {
-        if (previousEntityId != property.mEntityId)
-            TraceF("[\"%s\"] - Property id=%d\n", inMsg, property.mEntityId);
-        TraceF("\t\t{ Name=\"%s\" Value=\"%s\" }\n", GetVimString(StringIndex(property.mName)), GetVimString(StringIndex(property.mValue)));
-        previousEntityId = property.mEntityId;
-    }
-    TraceF("\n");
-}
-
-void CVimToDatasmith::DumpAssets() const {
-    TraceF("Assets count= %ld\n", mVimScene.mAssetsBFast.buffers.size());
-    for (const auto& asset : mVimScene.mAssetsBFast.buffers)
-        TraceF("\t%s\n", asset.name.c_str());
-}
-
-void CVimToDatasmith::DumpEntitiesTables() const {
-    for (auto table : mVimScene.mEntityTables)
-        DumpTable(table.first.c_str(), table.second, true);
 }
 
 CVimToDatasmith::CTextureEntry::CTextureEntry(CVimToDatasmith* inVimToDatasmith, const bfast::Buffer& inImageBuffer)
@@ -216,9 +282,9 @@ bool CreateFolder(const utf8_t* inFolderName) {
 }
 
 void CVimToDatasmith::CTextureEntry::CopyTextureInAssets() {
-    if (!CreateFolder(TCHAR_TO_UTF8(*mVimToDatasmith->mOutputPath)))
+    if (!CreateFolder(TCHAR_TO_UTF8(*mVimToDatasmith->mConverter.GetOutputPath())))
         return;
-    FString textureFolderPath = mVimToDatasmith->mOutputPath + TEXT("/Textures");
+    FString textureFolderPath = mVimToDatasmith->mConverter.GetOutputPath() + TEXT("/Textures");
     if (!CreateFolder(TCHAR_TO_UTF8(*textureFolderPath)))
         return;
 
@@ -259,7 +325,7 @@ void CVimToDatasmith::CTextureEntry::AddToScene() {
                 fmt = EDatasmithTextureFormat::JPEG;
         }
 #if 1
-        FString filePathName = mVimToDatasmith->mOutputPath + TEXT("/Textures/") + mDatasmithName;
+        FString filePathName = mVimToDatasmith->mConverter.GetOutputPath() + TEXT("/Textures/") + mDatasmithName;
         filePathName += UTF8_TO_TCHAR(extension);
         mDatasmithTexture->SetFile(*filePathName);
         FMD5Hash FileHash = FMD5Hash::HashFile(mDatasmithTexture->GetFile());
@@ -270,8 +336,8 @@ void CVimToDatasmith::CTextureEntry::AddToScene() {
 
         mDatasmithTexture->SetLabel(*mDatasmithLabel);
         mDatasmithTexture->SetSRGB(EDatasmithColorSpace::sRGB);
-        std::unique_lock<std::mutex> lk(mVimToDatasmith->mDatasmithSceneAccessControl);
-        mVimToDatasmith->mDatasmithScene->AddTexture(mDatasmithTexture);
+        std::unique_lock<std::mutex> lk(mVimToDatasmith->mConverter.GetSceneAccess());
+        mVimToDatasmith->mConverter.GetScene()->AddTexture(mDatasmithTexture);
     }
 }
 
@@ -281,7 +347,7 @@ CVimToDatasmith::CTextureEntry* CVimToDatasmith::CreateTexture(const utf8_t* inT
 
     auto insertResult = mVimTextureToTextureMap.insert({inTextureName, std::unique_ptr<CTextureEntry>()});
     if (insertResult.second) {
-        for (const auto& asset : mVimScene.mAssetsBFast.buffers) {
+        for (const auto& asset : mVim.GetAssetsBuffer()) {
             if (asset.name.compare(0, l, texturePrefix) == 0) {
                 if (asset.name.compare(l, std::string::npos, inTextureName) == 0) {
                     insertResult.first->second.reset(new CTextureEntry(this, asset));
@@ -299,18 +365,17 @@ CVimToDatasmith::CTextureEntry* CVimToDatasmith::CreateTexture(const utf8_t* inT
 // Create datasmith materials from Vim ones
 void CVimToDatasmith::CreateMaterials() {
     VerboseF("CVimToDatasmith::CreateMaterials\n");
-    Vim::EntityTable& materialTable = mVimScene.mEntityTables["table:Rvt.Material"];
+    const Vim::EntityTable& materialTable = mVim.GetEntitiesTable("table:Rvt.Material");
 
-    const std::vector<int>& nameArray = materialTable.mStringColumns["Name"];
-    const std::vector<int>& textureNameArray = materialTable.mStringColumns["ColorTextureFile"];
-
-    const std::vector<double>& idArray = materialTable.mNumericColumns["Id"];
-    const std::vector<double>& colorXArray = materialTable.mNumericColumns["Color.X"];
-    const std::vector<double>& colorYArray = materialTable.mNumericColumns["Color.Y"];
-    const std::vector<double>& colorZArray = materialTable.mNumericColumns["Color.Z"];
-    const std::vector<double>& transparencyArray = materialTable.mNumericColumns["Transparency"];
-    const std::vector<double>& glossinessArray = materialTable.mNumericColumns["Glossiness"];
-    const std::vector<double>& smoothnessArray = materialTable.mNumericColumns["Smoothness"];
+    const std::vector<StringIndex>& nameArray = GetStringsColumn(materialTable, "Name");
+    const std::vector<StringIndex>& textureNameArray = GetStringsColumn(materialTable, "ColorTextureFile");
+    const std::vector<double>& idArray = GetNumericsColumn(materialTable, "Id");
+    const std::vector<double>& colorXArray = GetNumericsColumn(materialTable, "Color.X");
+    const std::vector<double>& colorYArray = GetNumericsColumn(materialTable, "Color.Y");
+    const std::vector<double>& colorZArray = GetNumericsColumn(materialTable, "Color.Z");
+    const std::vector<double>& transparencyArray = GetNumericsColumn(materialTable, "Transparency");
+    const std::vector<double>& glossinessArray = GetNumericsColumn(materialTable, "Glossiness");
+    const std::vector<double>& smoothnessArray = GetNumericsColumn(materialTable, "Smoothness");
 
     for (size_t i = 0; i < idArray.size(); i++) {
         MaterialId vimMaterialId = (MaterialId)idArray[i];
@@ -319,12 +384,12 @@ void CVimToDatasmith::CreateMaterials() {
 
         auto previous = mVimToDatasmithMaterialMap.find(vimMaterialId);
         if (previous != mVimToDatasmithMaterialMap.end()) {
-            DebugF("MaterialId %u \"%s\" duplicated Index=%lu vs %lu\n", vimMaterialId, GetVimString(nameArray, i), i, previous->second);
+            DebugF("MaterialId %u \"%s\" duplicated Index=%lu vs %lu\n", vimMaterialId, mVim.GetString(nameArray, i), i, previous->second);
             continue;
         }
         mVimToDatasmithMaterialMap[vimMaterialId] = mMaterials.size();
 
-        CVimToDatasmith::MaterialEntry materialEntry(vimMaterialId);
+        CVimToDatasmith::CMaterialEntry materialEntry(vimMaterialId);
 
         materialEntry.mColor.x = colorXArray.size() > i ? (float)colorXArray[i] : 1.0f;
         materialEntry.mColor.y = colorYArray.size() > i ? (float)colorYArray[i] : 1.0f;
@@ -334,12 +399,12 @@ void CVimToDatasmith::CreateMaterials() {
         materialEntry.mParams.x = glossinessArray.size() > i ? (float)glossinessArray[i] / 256.0f : 0.5f;
         materialEntry.mParams.y = smoothnessArray.size() > i ? (float)smoothnessArray[i] / 256.0f : 50.0f / 256.0f;
 
-        const utf8_t* textureName = GetVimString(textureNameArray, i);
+        const utf8_t* textureName = mVim.GetString(textureNameArray, i);
         if (*textureName)
             materialEntry.mTexture = CreateTexture(textureName);
 
         IDatasmithUEPbrMaterialElement& element = materialEntry.mMaterialElement.Get();
-        const utf8_t* materialName = GetVimString(nameArray, i);
+        const utf8_t* materialName = mVim.GetString(nameArray, i);
         element.SetLabel(UTF8_TO_TCHAR((*materialName ? materialName : Utf8StringFormat("Vim %d", vimMaterialId).c_str())));
 
         if (materialEntry.mTexture != nullptr) {
@@ -372,7 +437,7 @@ class CVimToDatasmith::CMetadataContext {
   public:
     CMetadataContext(CVimToDatasmith* inVimTodatasmith)
     : mVimTodatasmith(inVimTodatasmith)
-    , mProperties(inVimTodatasmith->mVimScene.mEntityTables["table:Rvt.Element"].mProperties) {
+    , mProperties(inVimTodatasmith->mVim.GetEntitiesTable("table:Rvt.Element").mProperties) {
         mStart = mProperties.size() > 0 ? &mProperties[0] : nullptr;
         mEnd = mStart + mProperties.size();
     }
@@ -384,8 +449,8 @@ class CVimToDatasmith::CMetadataContext {
         while (actorEntry != nullptr) {
             while (start < end) {
                 TSharedPtr<IDatasmithKeyValueProperty> dsProperty =
-                    FDatasmithSceneFactory::CreateKeyValueProperty(UTF8_TO_TCHAR(mVimTodatasmith->GetVimString(StringIndex(start->mName))));
-                dsProperty->SetValue(UTF8_TO_TCHAR(mVimTodatasmith->GetVimString(StringIndex(start->mValue))));
+                    FDatasmithSceneFactory::CreateKeyValueProperty(UTF8_TO_TCHAR(mVimTodatasmith->mVim.GetString(StringIndex(start->mName))));
+                dsProperty->SetValue(UTF8_TO_TCHAR(mVimTodatasmith->mVim.GetString(StringIndex(start->mValue))));
                 dsProperty->SetPropertyType(EDatasmithKeyValuePropertyType::String);
                 actorEntry->GetOrCreateMetadataElement(mVimTodatasmith).AddProperty(dsProperty);
                 ++start;
@@ -424,7 +489,7 @@ class CVimToDatasmith::CMetadataContext {
 };
 
 void CVimToDatasmith::CreateAllMetaDatas() {
-    mCreateMetaDataStat.BeginNow();
+    mConverter.mBuildMetaDataTimeStat.BeginNow();
 #if 1
     CMetadataContext metadataContext(this);
     CTaskMgr::CTaskJointer createAllMetaDatas("CreateAllMetaDatas");
@@ -440,8 +505,8 @@ void CVimToDatasmith::CreateAllMetaDatas() {
             CActorEntry& actorEntry = mVecElementToActors[elementIndex];
             if (actorEntry.HasElement()) {
                 TSharedPtr<IDatasmithKeyValueProperty> dsProperty =
-                    FDatasmithSceneFactory::CreateKeyValueProperty(UTF8_TO_TCHAR(GetVimString(StringIndex(property.mName))));
-                dsProperty->SetValue(UTF8_TO_TCHAR(GetVimString(StringIndex(property.mValue))));
+                    FDatasmithSceneFactory::CreateKeyValueProperty(UTF8_TO_TCHAR(mVim.GetString(StringIndex(property.mName))));
+                dsProperty->SetValue(UTF8_TO_TCHAR(mVim.GetString(StringIndex(property.mValue))));
                 dsProperty->SetPropertyType(EDatasmithKeyValuePropertyType::String);
                 actorEntry.GetOrCreateMetadataElement(this).AddProperty(dsProperty);
             }
@@ -449,18 +514,18 @@ void CVimToDatasmith::CreateAllMetaDatas() {
             TraceF("CVimToDatasmith::CreateAllMetaDatas - Invalid element index %u\n", elementIndex);
     }
 #endif
-    mCreateMetaDataStat.FinishNow();
+    mConverter.mBuildMetaDataTimeStat.FinishNow();
 }
 
 void CVimToDatasmith::CreateAllTags() {
-    mCreateTagsStat.BeginNow();
-    Vim::EntityTable& elementTable = mVimScene.mEntityTables["table:Rvt.Element"];
-    std::vector<int>& elementToLevel = elementTable.mIndexColumns["Level:Level"];
-    std::vector<int>& elementToCategory = elementTable.mIndexColumns["Category:Category"];
-    std::vector<int>& elementToRoom = elementTable.mIndexColumns["Room:Room"];
-    std::vector<int>& elementToFamilyName = elementTable.mStringColumns["FamilyName"];
-    std::vector<int>& elementToType = elementTable.mStringColumns["Type"];
-    std::vector<double>& elementToId = elementTable.mNumericColumns["Id"];
+    mConverter.mBuildTagsTimeStat.BeginNow();
+    const Vim::EntityTable& elementTable = mVim.GetEntitiesTable("table:Rvt.Element");
+    const std::vector<int>& elementToLevel = GetIndexColumn(elementTable, "Level:Level");
+    const std::vector<int>& elementToCategory = GetIndexColumn(elementTable, "Category:Category");
+    const std::vector<int>& elementToRoom = GetIndexColumn(elementTable, "Room:Room");
+    const std::vector<StringIndex>& elementToFamilyName = GetStringsColumn(elementTable, "FamilyName");
+    const std::vector<StringIndex>& elementToType = GetStringsColumn(elementTable, "Type");
+    const std::vector<double>& elementToId = GetNumericsColumn(elementTable, "Id");
 
     for (ElementIndex elementIndex = ElementIndex(0); elementIndex < ElementIndex(mVecElementToActors.size()); Increment(elementIndex)) {
         IDatasmithActorElement* actor = mVecElementToActors[elementIndex].GetActorElement();
@@ -485,291 +550,26 @@ void CVimToDatasmith::CreateAllTags() {
             if (elementIndex < elementToFamilyName.size()) {
                 StringIndex familyName = StringIndex(elementToFamilyName[elementIndex]);
                 if (familyName != -1)
-                    actor->AddTag(*FString::Printf(TEXT("VIM.Family.%s"), UTF8_TO_TCHAR(GetVimString(familyName))));
+                    actor->AddTag(*FString::Printf(TEXT("VIM.Family.%s"), UTF8_TO_TCHAR(mVim.GetString(familyName))));
             }
             if (elementIndex < elementToType.size()) {
                 StringIndex typeString = StringIndex(elementToType[elementIndex]);
                 if (typeString != -1)
-                    actor->AddTag(*FString::Printf(TEXT("VIM.Type.%s"), UTF8_TO_TCHAR(GetVimString(typeString))));
+                    actor->AddTag(*FString::Printf(TEXT("VIM.Type.%s"), UTF8_TO_TCHAR(mVim.GetString(typeString))));
             }
         }
     }
-    mCreateTagsStat.FinishNow();
-}
-
-// Convert geometry to Datasmith Mesh
-void CVimToDatasmith::ConvertGeometryToDatasmithMesh(GeometryIndex geometryIndex, FDatasmithMesh* outMesh,
-                                                     MapVimMaterialIdToDsMeshMaterialIndice* outVimMaterialIdToDsMeshMaterialIndice) {
-    outMesh->SetName(UTF8_TO_TCHAR(Utf8StringFormat("%d", geometryIndex).c_str()));
-
-    // Collect vertex used by this geometry
-    std::unordered_map<VertexIndex, int32_t> vimIndiceToDsMeshIndice;
-    int32_t verticesCount = 0;
-    IndiceIndex indicesStart = mGroupIndexOffets[geometryIndex];
-    IndiceIndex indicesEnd = IndiceIndex(indicesStart + mGroupIndexCounts[geometryIndex]);
-    for (IndiceIndex index = indicesStart; index < indicesEnd; index = IndiceIndex(index + 1)) {
-        VertexIndex vertexIndex = mIndices[index];
-        if (vimIndiceToDsMeshIndice.find(vertexIndex) == vimIndiceToDsMeshIndice.end())
-            vimIndiceToDsMeshIndice[vertexIndex] = verticesCount++;
-    }
-
-    // Copy used vertex to the mesh
-    outMesh->SetVerticesCount(verticesCount);
-    for (const auto& iter : vimIndiceToDsMeshIndice) {
-        const cVec3& position = mPositions[iter.first];
-        outMesh->SetVertex(iter.second, position.x * Meter2Centimeter, -position.y * Meter2Centimeter, position.z * Meter2Centimeter);
-    }
-
-    // Collect materials used by this geometry
-    int32_t materialsCount = 0;
-    FaceIndex vimMaterial = FaceIndex(indicesStart / 3);
-
-    // Copy faces used by this geometry
-    int32_t facesCount = mGroupIndexCounts[geometryIndex] / 3;
-    TestAssert(facesCount * 3 == mGroupIndexCounts[geometryIndex]);
-    outMesh->SetFacesCount(facesCount);
-    IndiceIndex vimIndice = indicesStart;
-#define ReportInvalid 0
-#if ReportInvalid
-    bool invalidReported = false;
-    static uint32_t sReportedCount = 0;
-#endif
-    for (int32_t indexFace = 0; indexFace < facesCount; ++indexFace) {
-        // Get material
-        MaterialId vimMaterialId = mMaterialIds[vimMaterial];
-#if ReportInvalid
-        if (vimMaterialId == kInvalidMaterial)
-            if (invalidReported == false && sReportedCount < 10) {
-                invalidReported = true;
-                DebugF("CVimToDatasmith::ConvertGeometryToDatasmithMesh - Geometry[%u], Invalid face material [%d]\n", geometryIndex, indexFace);
-                if (++sReportedCount == 10)
-                    DebugF("CVimToDatasmith::ConvertGeometryToDatasmithMesh - Report limit of 10 reached\n");
-            }
-#endif
-        auto insertResult = outVimMaterialIdToDsMeshMaterialIndice->insert({vimMaterialId, materialsCount});
-        vimMaterial = FaceIndex(vimMaterial + 1);
-        if (insertResult.second)
-            ++materialsCount;
-
-        // Get the face local vertices index.
-        int32_t triangleVertices[3];
-        cVec3 normals[3];
-        for (int i = 0; i < 3; ++i) {
-            VertexIndex indice = mIndices[vimIndice];
-            vimIndice = IndiceIndex(vimIndice + 1);
-            triangleVertices[i] = vimIndiceToDsMeshIndice[indice];
-            const cVec3& normal = mNormals[indice];
-            outMesh->SetNormal(indexFace * 3 + i, normal.x, -normal.y, normal.z);
-        }
-
-        outMesh->SetFace(indexFace, triangleVertices[0], triangleVertices[1], triangleVertices[2], insertResult.first->second);
-
-        /*
-        int32_t triangleUVs[3];
-        ...
-        outMesh->SetFaceUV(indexFace, UVChannel, triangleUVs[0], triangleUVs[1], triangleUVs[2]);
-        */
-    }
-}
-
-// In old vim files, the geometry is exported in world space, even when
-// instanced, so we need to remove that world transform from the geometry
-void CVimToDatasmith::FixOldVimFileTransforms() {
-    if (mVimScene.mVersionMajor == 0 && mVimScene.mVersionMinor == 0 && mVimScene.mVersionPatch <= 200) {
-        std::vector<bool> isTransformed(mGroupVertexOffets.Count(), false);
-
-        for (NodeIndex nodeIndex = NodeIndex(0); nodeIndex < mInstancesSubgeometry->Count(); nodeIndex = NodeIndex(nodeIndex + 1)) {
-            GeometryIndex subgeometry = (*mInstancesSubgeometry)[nodeIndex];
-            if (subgeometry != kNoGeometry) {
-                TestAssert(subgeometry < (int)isTransformed.size());
-                if (!isTransformed[subgeometry]) {
-                    isTransformed[subgeometry] = true;
-
-                    cMat4 invTrans = (*mInstancesTransform)[nodeIndex].Inverse();
-
-                    VertexIndex nextOffset = subgeometry < mGroupVertexOffets.Count() ? mGroupVertexOffets[GeometryIndex(subgeometry + 1)] : mPositions.Count();
-                    for (VertexIndex index = mGroupVertexOffets[subgeometry]; index < nextOffset; index = VertexIndex(index + 1)) {
-                        cVec3& vertex = mPositions[index];
-                        vertex = vertex * invTrans;
-                    }
-                }
-            }
-        }
-    }
-}
-
-void CVimToDatasmith::CollectAttributes() {
-    TAttributeVector<cVec4> colorAttribute;
-    VerboseF("CVimToDatasmith::CollectAttributes - Begin\n");
-
-    constexpr const char* ObsoleteFaceGroupId = "g3d:face:groupid:0:int32:1";
-    constexpr const char* ObsoleteGroupIndexOffset = "g3d:group:indexoffset:0:int32:1";
-    constexpr const char* ObsoleteGroupVertexOffset = "g3d:group:vertexoffset:0:int32:1";
-
-    for (const g3d::Attribute& attr : mVimScene.mGeometry.attributes) {
-        auto descriptorString = attr.descriptor.to_string();
-        if (descriptorString == g3d::descriptors::VertexColorWithAlpha)
-            colorAttribute.Initialize(attr);
-        else if (descriptorString == g3d::descriptors::Position)
-            mPositions.Initialize(attr);
-        else if (descriptorString == g3d::descriptors::Index)
-            mIndices.Initialize(attr);
-        else if (descriptorString == g3d::descriptors::FaceMaterialId)
-            mMaterialIds.Initialize(attr);
-        else if (descriptorString == g3d::descriptors::FaceGroup || descriptorString == ObsoleteFaceGroupId)
-            mObjectIds.Initialize(attr);
-        else if (descriptorString == g3d::descriptors::SubgeometryIndexOffset || descriptorString == ObsoleteGroupIndexOffset)
-            mGroupIndexOffets.Initialize(attr);
-        else if (descriptorString == g3d::descriptors::SubgeometryVertexOffset || descriptorString == ObsoleteGroupVertexOffset)
-            mGroupVertexOffets.Initialize(attr);
-        else if (descriptorString == g3d::descriptors::InstanceTransform) {
-            TestAssert(!mInstancesTransform);
-            mInstancesTransform.reset(new TAttributeVector<cMat4, NodeIndex>(attr));
-        } else if (descriptorString == g3d::descriptors::InstanceParent) {
-            TestAssert(!mInstancesParent);
-            mInstancesParent.reset(new TAttributeVector<ParentIndex, NodeIndex>(attr));
-        } else if (descriptorString == g3d::descriptors::InstanceSubgeometry) {
-            TestAssert(!mInstancesSubgeometry);
-            mInstancesSubgeometry.reset(new TAttributeVector<GeometryIndex, NodeIndex>(attr));
-        } else if (descriptorString == g3d::descriptors::VertexUv)
-            mVertexUVs.Initialize(attr);
-        else
-            TraceF("Unprocessed attribute \"%s\"\n", descriptorString.c_str());
-    }
-
-    TestAssert(mInstancesSubgeometry && mInstancesTransform && mInstancesParent);
-
-    const size_t instancesCount = mInstancesSubgeometry->Count();
-    TestAssert(mInstancesTransform->Count() == instancesCount && mInstancesParent->Count() == instancesCount);
-
-    const GeometryIndex groupCount = mGroupIndexOffets.Count();
-    TestAssert(groupCount == mGroupVertexOffets.Count());
-
-    // Calculate group index counts
-    mGroupIndexCounts.Allocate(groupCount);
-    if (groupCount > 0) {
-        for (GeometryIndex i = GeometryIndex(0); i < groupCount - 1; i = GeometryIndex(i + 1))
-            mGroupIndexCounts[i] = IndiceIndex(mGroupIndexOffets[GeometryIndex(i + 1)] - mGroupIndexOffets[i]);
-        mGroupIndexCounts[GeometryIndex(groupCount - 1)] = IndiceIndex(mIndices.Count() - mGroupIndexOffets[GeometryIndex(groupCount - 1)]);
-    }
-
-    FixOldVimFileTransforms();
-
-    MeasureTime(ComputeNormals, ComputeNormals(true), kP2DB_Verbose);
-
-    VerboseF("CVimToDatasmith::CollectAttributes - End\n");
-}
-
-// Initialize the converter from Vim scene
-void CVimToDatasmith::ProcessGeometry() {
-    VerboseF("CVimToDatasmith::ProcessGeometry\n");
-
-    CTaskMgr::CTaskJointer jointer("ProcessGeometry");
-    CTaskMgr::CTaskJointer convertObsolete("ConvertObsolete");
-
-    (new CTaskMgr::TJoinableFunctorTask<CVimToDatasmith*>([](CVimToDatasmith* inVimToDatasmith) { inVimToDatasmith->ConvertObsoleteSceneNode(); }, this))
-        ->Start(&convertObsolete);
-
-    Vim::EntityTable& nodeTable = mVimScene.mEntityTables["table:Vim.Node"];
-    std::vector<int>& vimNodeToVimElement = nodeTable.mIndexColumns["Element:Element"];
-    mVimNodeToVimElement.Initialize(vimNodeToVimElement);
-
-    Vim::EntityTable& elementTable = mVimScene.mEntityTables["table:Rvt.Element"];
-    std::vector<int>& elementToName = elementTable.mStringColumns["Name"];
-    mElementToName.Initialize(elementToName);
-
-#if 0
-    DumpIndexColumn("table:Vim.Node", "Element:Element", vimNodeToVimElement);
-    DumpStringColumn("table:Rvt.Element", "Name", elementToName);
-#endif
-
-    (new CTaskMgr::TJoinableFunctorTask<CVimToDatasmith*>(
-         [](CVimToDatasmith* inVimToDatasmith) {
-             VerboseF("CVimToDatasmith::CollectAttributes - X Begin\n");
-             ElementIndex elementsCount = inVimToDatasmith->mElementToName.Count();
-             for (ElementIndex elementIndex : inVimToDatasmith->mVimNodeToVimElement)
-                 TestAssert(elementIndex == ElementIndex::kNoElement || elementIndex < elementsCount);
-             VerboseF("CVimToDatasmith::CollectAttributes - X End\n");
-         },
-         this))
-        ->Start(&jointer);
-
-    convertObsolete.Join();
-
-    (new CTaskMgr::TJoinableFunctorTask<CVimToDatasmith*>([](CVimToDatasmith* inVimToDatasmith) { inVimToDatasmith->CollectAttributes(); }, this))
-        ->Start(&jointer);
-
-    jointer.Join();
-
-    TestAssert(mVimNodeToVimElement.Count() == mInstancesSubgeometry->Count());
-}
-
-void CVimToDatasmith::ConvertObsoleteSceneNode() {
-    VerboseF("CVimToDatasmith::ConvertObsoleteSceneNode - Begin\n");
-    for (const auto& buffer : mVimScene.mBfast.buffers) {
-        if (buffer.name == "nodes") {
-            class CObsoleteSceneNode {
-              public:
-                ParentIndex mParent;
-                GeometryIndex mGeometry;
-                int mInstance; // Never used
-                float mTransform[16];
-            };
-            NodeIndex instancesCount = NodeIndex(buffer.data.size() / sizeof(CObsoleteSceneNode));
-            TestAssert(instancesCount * sizeof(CObsoleteSceneNode) == buffer.data.size());
-            mInstancesTransform.reset(new TAllocatedVector<cMat4, NodeIndex>(instancesCount));
-            mInstancesParent.reset(new TAllocatedVector<ParentIndex, NodeIndex>(instancesCount));
-            mInstancesSubgeometry.reset(new TAllocatedVector<GeometryIndex, NodeIndex>(instancesCount));
-
-            const CObsoleteSceneNode* nodes = reinterpret_cast<const CObsoleteSceneNode*>(buffer.data.begin());
-            for (NodeIndex i = NodeIndex(0); i < instancesCount; i = NodeIndex(i + 1)) {
-                (*mInstancesTransform)[i] = *reinterpret_cast<const cMat4*>(nodes->mTransform);
-                (*mInstancesParent)[i] = nodes->mParent;
-                (*mInstancesSubgeometry)[i] = nodes->mGeometry;
-                ++nodes;
-            }
-
-            return;
-        }
-    }
-    VerboseF("CVimToDatasmith::ConvertObsoleteSceneNode - End\n");
-}
-
-// Datasmith need normals.
-void CVimToDatasmith::ComputeNormals(bool inFlip) {
-    mNormals.Allocate(mPositions.Count());
-    for (IndiceIndex i = IndiceIndex(0); i < mIndices.Count(); i = IndiceIndex(i + 3)) {
-        VertexIndex vi0 = mIndices[IndiceIndex(i + 0)];
-        VertexIndex vi1 = mIndices[IndiceIndex(i + 1)];
-        VertexIndex vi2 = mIndices[IndiceIndex(i + 2)];
-        cVec3 v0 = mPositions[vi0];
-        cVec3 v1 = mPositions[vi1];
-        cVec3 v2 = mPositions[vi2];
-
-        cVec3 s0 = v2 - v0;
-        cVec3 s1 = v2 - v1;
-
-        cVec3 normal = s1 ^ s0;
-        normal.Normalise();
-        if (inFlip)
-            normal = -normal;
-
-        mNormals[vi0] += normal;
-        mNormals[vi1] += normal;
-        mNormals[vi2] += normal;
-    }
-    for (VertexIndex i = VertexIndex(0); i < mNormals.Count(); i = VertexIndex(i + 1))
-        mNormals[i].Normalise();
+    mConverter.mBuildTagsTimeStat.FinishNow();
 }
 
 // Create all definitions
 void CVimToDatasmith::ProcessInstances() {
     VerboseF("CVimToDatasmith::ProcessDefinitions\n");
-    mGeometryEntries.resize(mGroupIndexOffets.Count());
-    mVecElementToActors.resize(mElementToName.Count());
+    mGeometryEntries.resize(mVim.mGroupIndexOffets.Count());
+    mVecElementToActors.resize(mVim.mElementToName.Count());
 
-    for (NodeIndex nodeIndex = NodeIndex(0); nodeIndex < mInstancesSubgeometry->Count(); nodeIndex = NodeIndex(nodeIndex + 1)) {
-        GeometryIndex geometryIndex = (*mInstancesSubgeometry)[nodeIndex];
+    for (NodeIndex nodeIndex = NodeIndex(0); nodeIndex < mVim.mInstancesSubgeometry->Count(); nodeIndex = NodeIndex(nodeIndex + 1)) {
+        GeometryIndex geometryIndex = (*mVim.mInstancesSubgeometry)[nodeIndex];
 
         // Get instance geometry definition
         if (geometryIndex != kNoGeometry) {
@@ -799,42 +599,21 @@ void CVimToDatasmith::AddUsedMaterials() {
             if (material.mTexture != nullptr) {
                 material.mTexture->AddToScene();
             }
-            std::unique_lock<std::mutex> lk(mDatasmithSceneAccessControl);
-            mDatasmithScene->AddMaterial(material.mMaterialElement);
+            std::unique_lock<std::mutex> lk(mConverter.GetSceneAccess());
+            mConverter.GetScene()->AddMaterial(material.mMaterialElement);
         }
     }
 }
 
-#if UseValidator
-// For Datasmith::FSceneValidator::PrintReports
-static void Trace(const utf8_t* FormatString, ...) {
-    va_list argptr;
-    va_start(argptr, FormatString);
-    vfprintf(stderr, FormatString, argptr);
-    va_end(argptr);
+void CVimToDatasmith::ConvertScene() {
+    ConvertGeometries();
+    CreateActors();
+    AddUsedMaterials();
+    CreateAllMetaDatas();
+    CreateAllTags();
 }
-#endif
 
-// Convert Vim scene to a datasmith scene
-void CVimToDatasmith::CreateDatasmithScene() {
-    VerboseF("CVimToDatasmith::CreateDatasmithScene\n");
-    mPrepareTimeStat.BeginNow();
-    mDatasmithScene = FDatasmithSceneFactory::CreateScene(UTF8_TO_TCHAR(mVimFilePath.c_str()));
-
-    mDatasmithScene->SetHost(TEXT("Vim"));
-    mDatasmithScene->SetVendor(TEXT("VIMaec"));
-    mDatasmithScene->SetProductName(TEXT("VimToDatasmith"));
-    mDatasmithScene->SetProductVersion(UTF8_TO_TCHAR("1.0.0"));
-
-    CreateMaterials();
-    ProcessGeometry();
-
-    mPrepareTimeStat.FinishNow();
-
-    PrintStats();
-
-    mConvertTimeStat.BeginNow();
-
+void CVimToDatasmith::ConvertGeometries() {
     try {
         ProcessInstances();
     } catch (...) {
@@ -842,42 +621,6 @@ void CVimToDatasmith::CreateDatasmithScene() {
         throw;
     }
     CTaskMgr::Get().Join();
-
-    CreateActors();
-    AddUsedMaterials();
-
-    mConvertTimeStat.FinishNow();
-
-    CreateAllMetaDatas();
-    CreateAllTags();
-
-#if UseValidator
-    mValidationTimeStat.BeginNow();
-    Datasmith::FSceneValidator validator(mDatasmithScene.ToSharedRef());
-    validator.CheckElementsName();
-    validator.CheckDependances();
-    validator.PrintReports(Datasmith::FSceneValidator::kVerbose, Trace);
-    mValidationTimeStat.FinishNow();
-#endif
-}
-
-// Write a Datasmith scene to the Datasmith file
-void CVimToDatasmith::CreateDatasmithFile() {
-    VerboseF("CVimToDatasmith::CreateDatasmithFile\n");
-    mWriteTimeStat.BeginNow();
-
-    FDatasmithExportOptions::PathTexturesMode = EDSResizedTexturesPath::OriginalFolder;
-    FDatasmithSceneExporter SceneExporter;
-
-    SceneExporter.PreExport();
-    SceneExporter.SetName(UTF8_TO_TCHAR(mDatasmithFileName.c_str()));
-
-    SceneExporter.SetOutputPath(UTF8_TO_TCHAR(mDatasmithFolderPath.c_str()));
-
-    SceneExporter.Export(mDatasmithScene.ToSharedRef());
-    mWriteTimeStat.FinishNow();
-
-    ReportTimeStat();
 }
 
 // Print selected contents
@@ -937,22 +680,6 @@ void CVimToDatasmith::PrintStats() {
 #endif
 }
 
-// Print time statistics
-void CVimToDatasmith::ReportTimeStat() {
-    EP2DB tmp = SetPrintLevel(kP2DB_Trace);
-    mStartTimeStat.FinishNow();
-    mStartTimeStat.PrintTime("Total", kP2DB_Report);
-    mSetupTimeStat.PrintTime("Setup");
-    mReadTimeStat.PrintTime("Read");
-    mPrepareTimeStat.PrintTime("Prepare");
-    mConvertTimeStat.PrintTime("Convert");
-    mCreateMetaDataStat.PrintTime("MetaData");
-    mCreateTagsStat.PrintTime("Tags");
-    mValidationTimeStat.PrintTime("Validation");
-    mWriteTimeStat.PrintTime("Write");
-    SetPrintLevel(tmp);
-}
-
 FTransform ToFTransform(const cMat4& inMat) {
     cQuat quat;
     quat.FromMat4(inMat);
@@ -979,7 +706,7 @@ const TCHAR* CVimToDatasmith::GetMaterialName(MaterialId inVimMaterialId) const 
         }
     }
     TestAssert(materialIndex < mMaterials.size());
-    const MaterialEntry& materialEntry = mMaterials[materialIndex];
+    const CMaterialEntry& materialEntry = mMaterials[materialIndex];
     return materialEntry.mMaterialElement->GetName();
 }
 
@@ -1004,7 +731,7 @@ CVimToDatasmith::CMeshElement* CVimToDatasmith::CMeshDefinition::Initialize(FDat
                                                                             CVimToDatasmith& inVimToDatasmith) {
     TCHAR SubDir1[2] = {inMesh.GetName()[0], 0};
     TCHAR SubDir2[2] = {inMesh.GetName()[1], 0};
-    FString OutputPath(FPaths::Combine(inVimToDatasmith.mOutputPath, SubDir1, SubDir2));
+    FString OutputPath(FPaths::Combine(inVimToDatasmith.mConverter.GetOutputPath(), SubDir1, SubDir2));
 
     // Create a new mesh file
     FDatasmithMeshExporter MeshExporter;
@@ -1014,13 +741,13 @@ CVimToDatasmith::CMeshElement* CVimToDatasmith::CMeshDefinition::Initialize(FDat
         for (auto& iter : inVimMaterialIdToDsMeshMaterialIndice) {
             size_t materialIndex = inVimToDatasmith.mVimToDatasmithMaterialMap[iter.first];
             TestAssert(materialIndex < inVimToDatasmith.mMaterials.size());
-            MaterialEntry& materialEntry = inVimToDatasmith.mMaterials[materialIndex];
+            CMaterialEntry& materialEntry = inVimToDatasmith.mMaterials[materialIndex];
             materialEntry.mCount++;
             meshElement->SetMaterial(materialEntry.mMaterialElement->GetName(), iter.second);
         }
         {
-            std::lock_guard<std::mutex> lock(inVimToDatasmith.mDatasmithSceneAccessControl);
-            inVimToDatasmith.mDatasmithScene->AddMesh(meshElement);
+            std::unique_lock<std::mutex> lk(inVimToDatasmith.mConverter.GetSceneAccess());
+            inVimToDatasmith.mConverter.GetScene()->AddMesh(meshElement);
         }
     }
 
@@ -1091,13 +818,91 @@ CVimToDatasmith::CGeometryEntry::CGeometryEntry(CVimToDatasmith* inVimToDatasmit
     CTaskMgr::Get().AddTask(this);
 }
 
+
+// Convert geometry to Datasmith Mesh
+void CVimToDatasmith::CGeometryEntry::ConvertGeometryToDatasmithMesh(FDatasmithMesh* outMesh,
+                                                                     MapVimMaterialIdToDsMeshMaterialIndice* outVimMaterialIdToDsMeshMaterialIndice) {
+    CVimImported& vim = mVimToDatasmith->mVim;
+    outMesh->SetName(UTF8_TO_TCHAR(Utf8StringFormat("%d", mGeometry).c_str()));
+    
+    // Collect vertex used by this geometry
+    std::unordered_map<VertexIndex, int32_t> vimIndiceToDsMeshIndice;
+    int32_t verticesCount = 0;
+    IndiceIndex indicesStart = vim.mGroupIndexOffets[mGeometry];
+    IndiceIndex indicesEnd = IndiceIndex(indicesStart + vim.mGroupIndexCounts[mGeometry]);
+    for (IndiceIndex index = indicesStart; index < indicesEnd; index = IndiceIndex(index + 1)) {
+        VertexIndex vertexIndex = vim.mIndices[index];
+        if (vimIndiceToDsMeshIndice.find(vertexIndex) == vimIndiceToDsMeshIndice.end())
+            vimIndiceToDsMeshIndice[vertexIndex] = verticesCount++;
+    }
+    
+    // Copy used vertex to the mesh
+    outMesh->SetVerticesCount(verticesCount);
+    for (const auto& iter : vimIndiceToDsMeshIndice) {
+        const cVec3& position = vim.mPositions[iter.first];
+        outMesh->SetVertex(iter.second, position.x * Meter2Centimeter, -position.y * Meter2Centimeter, position.z * Meter2Centimeter);
+    }
+    
+    // Collect materials used by this geometry
+    int32_t materialsCount = 0;
+    FaceIndex vimMaterial = FaceIndex(indicesStart / 3);
+    
+    // Copy faces used by this geometry
+    int32_t facesCount = vim.mGroupIndexCounts[mGeometry] / 3;
+    TestAssert(facesCount * 3 == vim.mGroupIndexCounts[mGeometry]);
+    outMesh->SetFacesCount(facesCount);
+    IndiceIndex vimIndice = indicesStart;
+#define ReportInvalid 0
+#if ReportInvalid
+    bool invalidReported = false;
+    static uint32_t sReportedCount = 0;
+#endif
+    for (int32_t indexFace = 0; indexFace < facesCount; ++indexFace) {
+        // Get material
+        MaterialId vimMaterialId = vim.mMaterialIds[vimMaterial];
+#if ReportInvalid
+        if (vimMaterialId == kInvalidMaterial)
+            if (invalidReported == false && sReportedCount < 10) {
+                invalidReported = true;
+                DebugF("CVimToDatasmith::CGeometryEntry::ConvertGeometryToDatasmithMesh - Geometry[%u], Invalid face material [%d]\n", mGeometry, indexFace);
+                if (++sReportedCount == 10)
+                    DebugF("CVimToDatasmith::CGeometryEntry::ConvertGeometryToDatasmithMesh - Report limit of 10 reached\n");
+            }
+#endif
+        auto insertResult = outVimMaterialIdToDsMeshMaterialIndice->insert({vimMaterialId, materialsCount});
+        vimMaterial = FaceIndex(vimMaterial + 1);
+        if (insertResult.second)
+            ++materialsCount;
+        
+        // Get the face local vertices index.
+        int32_t triangleVertices[3];
+        cVec3 normals[3];
+        for (int i = 0; i < 3; ++i) {
+            VertexIndex indice = vim.mIndices[vimIndice];
+            vimIndice = IndiceIndex(vimIndice + 1);
+            triangleVertices[i] = vimIndiceToDsMeshIndice[indice];
+            const cVec3& normal = vim.mNormals[indice];
+            outMesh->SetNormal(indexFace * 3 + i, normal.x, -normal.y, normal.z);
+        }
+        
+        outMesh->SetFace(indexFace, triangleVertices[0], triangleVertices[1], triangleVertices[2], insertResult.first->second);
+        
+        /*
+         int32_t triangleUVs[3];
+         ...
+         outMesh->SetFaceUV(indexFace, UVChannel, triangleUVs[0], triangleUVs[1], triangleUVs[2]);
+         */
+    }
+}
+
+
 void CVimToDatasmith::CGeometryEntry::Run() {
-    if ((*mVimToDatasmith->mInstancesTransform)[mDefinition].IsIdentity()) {
+    if ((*mVimToDatasmith->mVim.mInstancesTransform)[mDefinition].IsIdentity()) {
     }
 
     FDatasmithMesh datasmithMesh;
     MapVimMaterialIdToDsMeshMaterialIndice vimMaterialIdToDsMeshMaterialIndice;
-    mVimToDatasmith->ConvertGeometryToDatasmithMesh(mGeometry, &datasmithMesh, &vimMaterialIdToDsMeshMaterialIndice);
+    ConvertGeometryToDatasmithMesh(&datasmithMesh, &vimMaterialIdToDsMeshMaterialIndice);
 
     if (!vimMaterialIdToDsMeshMaterialIndice.empty()) {
         Datasmith::FDatasmithHash meshHasher;
@@ -1159,10 +964,10 @@ FString CVimToDatasmith::CGeometryEntry::HashToName(Datasmith::FDatasmithHash& h
 void CVimToDatasmith::CGeometryEntry::AddActor(const TSharedRef<IDatasmithMeshActorElement>& inActor, NodeIndex inInstance) {
     inActor->SetStaticMeshPathName(mMeshElement->GetMeshElement(*mVimToDatasmith)->GetName());
 
-    ElementIndex elementIndex = mVimToDatasmith->mVimNodeToVimElement[inInstance];
+    ElementIndex elementIndex = mVimToDatasmith->mVim.mVimNodeToVimElement[inInstance];
     if (elementIndex != ElementIndex::kNoElement) {
         mVimToDatasmith->mVecElementToActors[elementIndex].SetActor(inActor, inInstance);
-        inActor->SetLabel(UTF8_TO_TCHAR(mVimToDatasmith->GetVimString(mVimToDatasmith->mElementToName[elementIndex])));
+        inActor->SetLabel(UTF8_TO_TCHAR(mVimToDatasmith->mVim.GetString(mVimToDatasmith->mVim.mElementToName[elementIndex])));
     } else
         DebugF("CVimToDatasmith::CGeometryEntry::CreateActor - Invalid element (instance=%u)\n", inInstance);
 
@@ -1170,11 +975,12 @@ void CVimToDatasmith::CGeometryEntry::AddActor(const TSharedRef<IDatasmithMeshAc
         inActor->SetLabel(*FString::Printf(TEXT("Instance_%u"), inInstance));
 
     // Add the new actor to the scene
-    mVimToDatasmith->mDatasmithScene->AddActor(inActor);
+    std::unique_lock<std::mutex> lk(mVimToDatasmith->mConverter.GetSceneAccess());
+    mVimToDatasmith->mConverter.GetScene()->AddActor(inActor);
 }
 
 void CVimToDatasmith::CGeometryEntry::CreateActor(NodeIndex inInstance) {
-    FTransform actorTransfo(ToFTransform((*mVimToDatasmith->mInstancesTransform)[inInstance]));
+    FTransform actorTransfo(ToFTransform((*mVimToDatasmith->mVim.mInstancesTransform)[inInstance]));
 
     // Compute the actor name
     Datasmith::FDatasmithHash hasher;
@@ -1202,14 +1008,14 @@ void CVimToDatasmith::CGeometryEntry::CreateHierarchicalInstancesActor() {
     Datasmith::FDatasmithHash hasher;
 
     // Hash 1st instance (definition) transformation
-    FTransform definitionTransfo(ToFTransform((*mVimToDatasmith->mInstancesTransform)[mDefinition]));
+    FTransform definitionTransfo(ToFTransform((*mVimToDatasmith->mVim.mInstancesTransform)[mDefinition]));
     hasher.HashQuat(definitionTransfo.GetRotation());
     hasher.HashFixVector(definitionTransfo.GetTranslation());
     hasher.HashScaleVector(definitionTransfo.GetScale3D());
 
     // Hash all instances
     for (NodeIndex instance : *mInstances) {
-        FTransform instanceTransfo = ToFTransform((*mVimToDatasmith->mInstancesTransform)[instance]);
+        FTransform instanceTransfo = ToFTransform((*mVimToDatasmith->mVim.mInstancesTransform)[instance]);
         hasher.HashQuat(instanceTransfo.GetRotation());
         hasher.HashFixVector(instanceTransfo.GetTranslation());
         hasher.HashScaleVector(instanceTransfo.GetScale3D());
@@ -1224,7 +1030,7 @@ void CVimToDatasmith::CGeometryEntry::CreateHierarchicalInstancesActor() {
 
     hierarchicalMeshActor->AddInstance(definitionTransfo);
     for (NodeIndex instance : *mInstances) {
-        FTransform instanceTransfo(ToFTransform((*mVimToDatasmith->mInstancesTransform)[instance]));
+        FTransform instanceTransfo(ToFTransform((*mVimToDatasmith->mVim.mInstancesTransform)[instance]));
         hierarchicalMeshActor->AddInstance(instanceTransfo);
     }
 
@@ -1236,7 +1042,7 @@ void CVimToDatasmith::CGeometryEntry::CreateActors() {
     if (meshElement != nullptr) {
         if (mInstances == nullptr)
             CreateActor(mDefinition);
-        else if (mVimToDatasmith->mNoHierarchicalInstance) {
+        else if (mVimToDatasmith->mConverter.GetNoHierarchicalInstance()) {
             CreateActor(mDefinition);
             for (NodeIndex instance : *mInstances)
                 CreateActor(instance);

@@ -76,4 +76,21 @@ inline float sqr(float inValue) {
 // To convert from Vim meters to UE centimeter units
 extern const float Meter2Centimeter;
 
+// Here are all VIM index. Use of emum to get some type checking
+enum ElementIndex : uint32_t { kNoElement = (uint32_t)-1 };
+enum NodeIndex : uint32_t { kNoNode = (uint32_t)-1 };
+enum GeometryIndex : uint32_t { kNoGeometry = (uint32_t)-1 };
+enum ParentIndex : uint32_t { kNoParent = (uint32_t)-1 };
+enum VertexIndex : uint32_t { kInvalidVertex = (uint32_t)-1 };
+enum GroupIndex : uint32_t { kInvalidGroup = (uint32_t)-1 };
+enum MaterialId : uint32_t { kInvalidMaterial = (uint32_t)-1 };
+enum IndiceIndex : uint32_t { kInvalidIndice = (uint32_t)-1 };
+enum FaceIndex : uint32_t { kInvalidFace = (uint32_t)-1 }; // FaceIndex is same as Indices index / 3
+enum StringIndex : uint32_t { kInvalidString = (uint32_t)-1 };
+
+// Simple template function to increment enum value
+template <class Enum> inline void Increment(Enum& e) {
+    e = Enum(e + 1);
+}
+
 } // namespace Vim2Ds

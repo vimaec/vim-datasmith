@@ -107,7 +107,7 @@ namespace Vim
             }
             catch (std::exception& e)
             {
-                e;
+                (void)e;
                 return VimErrorCodes::FileNotRecognized;
             }
 
@@ -200,7 +200,7 @@ namespace Vim
                     }
                     catch (std::exception& e)
                     {
-                        e;
+                        (void)e;
                         return Vim::VimErrorCodes::GeometryLoadingException;
                     }
                 }
@@ -212,7 +212,7 @@ namespace Vim
                     }
                     catch (std::exception& e)
                     {
-                        e;
+                        (void)e;
                         return Vim::VimErrorCodes::AssetLoadingException;
                     }
                 }
@@ -280,7 +280,7 @@ namespace Vim
                     }
                     catch (std::exception& e)
                     {
-                        e;
+                        (void)e;
                         return Vim::VimErrorCodes::EntityLoadingException;
                     }
                 }

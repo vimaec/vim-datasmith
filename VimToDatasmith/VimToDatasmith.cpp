@@ -2,9 +2,12 @@
 // Licensed under the MIT License 1.0
 
 #include "VimToDatasmith.h"
-#include "CVimToDatasmith.h"
+#include "CConvertVimToDatasmith.h"
 
+#include "CTaskMgr.h"
 #include "DebugTools.h"
+#include "cAABB.h"
+#include "cMat.h"
 
 DISABLE_SDK_WARNINGS_START
 
@@ -85,11 +88,9 @@ int Convert(int argc, const utf8_t* argv[]) {
     int result = EXIT_FAILURE;
     try {
         InitDatasmith();
-        CVimToDatasmith vimToDatasmith;
+        CConvertVimToDatasmith vimToDatasmith;
         vimToDatasmith.GetParameters(argc, argv);
-        vimToDatasmith.ReadVimFile();
-        vimToDatasmith.CreateDatasmithScene();
-        vimToDatasmith.CreateDatasmithFile();
+        vimToDatasmith.Convert();
         CTaskMgr::DeleteMgr();
         result = EXIT_SUCCESS;
     } catch (const std::exception& e) {
