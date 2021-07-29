@@ -91,7 +91,7 @@ void CTaskMgr::AddTask(ITask* inTask) {
                 throw std::runtime_error("Adding task to a terminated CTaskMgr");
             mTaskQueue.push(inTask);
         }
-        mThreadControlConditionVariable.notify_one();
+        mThreadControlConditionVariable.notify_all();
     } else {
         try {
             inTask->Run();
@@ -150,6 +150,23 @@ CTaskMgr::ITask* CTaskMgr::GetTask() {
     }
 
     return task;
+}
+
+// Join all task before continuing
+void CTaskMgr::CTaskJointer::Join(bool inRethrow) {
+    if (mTaskCount != 0) {
+        CTaskMgr& mgr = CTaskMgr::Get();
+        std::unique_lock<std::mutex> lk(mgr.mAccessControl);
+        while (mTaskCount != 0) {
+            mgr.mThreadControlConditionVariable.notify_one();
+            mgr.mThreadControlConditionVariable.wait_for(lk, 1ms, [this] { return mTaskCount != 0; });
+        }
+    }
+    if (inRethrow && mGotExceptionCount != 0) {
+        uint32_t gotExceptionCount = mGotExceptionCount;
+        mGotExceptionCount = 0;
+        ThrowMessage("CTaskJointer::Join - Rethrow the task exception (%d)", uint32_t(gotExceptionCount));
+    }
 }
 
 } // namespace Vim2Ds

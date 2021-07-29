@@ -32,7 +32,9 @@ class FDatasmithHash;
 
 namespace Vim2Ds {
 
-enum InstanceIndex : uint32_t { kNoInstance = (uint32_t)-1 };
+enum ElementIndex : uint32_t { kNoElement = (uint32_t)-1 };
+
+enum NodeIndex : uint32_t { kNoNode = (uint32_t)-1 };
 
 enum GeometryIndex : uint32_t { kNoGeometry = (uint32_t)-1 };
 
@@ -49,6 +51,10 @@ enum IndiceIndex : uint32_t { kInvalidIndice = (uint32_t)-1 };
 enum FaceIndex : uint32_t { kInvalidFace = (uint32_t)-1 }; // FaceIndex is same as Indices index / 3
 
 enum StringIndex : uint32_t { kInvalidString = (uint32_t)-1 };
+
+template <class Enum> inline void Increment(Enum& e) {
+    e = Enum(e + 1);
+}
 
 // Basic vector class
 template <class C, class Indexor = std::size_t> class TVector {
@@ -73,10 +79,14 @@ template <class C, class Indexor = std::size_t> class TVector {
     // Print the content of this vector
     void Print(const utf8_t* inDataName, const utf8_t* inSeparator = "\n\t\t") {
         TraceF("\t%s Count=%lu", inDataName, mCount);
-        for (Indexor index = Indexor(0); index < mCount; index = Indexor(index + 1))
+        for (Indexor index = Indexor(0); index < mCount; Increment(index))
             TraceF("%s%lu %s", inSeparator, index, ToUtf8(mData[index]));
         TraceF("\n");
     }
+
+    const C* begin() const { return mData; }
+
+    const C* end() const { return mData + mCount; }
 
   protected:
     size_t mCount = 0; // Return the number of elements
@@ -95,6 +105,22 @@ template <class C, class Indexor = std::size_t> class TAttributeVector : public 
         this->mCount = dataSize / sizeof(C);
         TestAssert(dataSize == this->mCount * sizeof(C));
         this->mData = reinterpret_cast<C*>(inAttr._begin);
+    }
+};
+
+// Vector class that refers to vector of integer.
+/* Doesn't copy the vector */
+template <class C, class Indexor> class TIndexor : public TVector<C, Indexor> {
+    static_assert(sizeof(C) == sizeof(int), "C hasn't same size as int");
+
+  public:
+    TIndexor() {}
+    TIndexor(const std::vector<int>& inOriginal) { Initialize(inOriginal); }
+
+    void Initialize(const std::vector<int>& inOriginal) {
+        this->mCount = inOriginal.size();
+        if (this->mCount > 0)
+            this->mData = const_cast<C*>(reinterpret_cast<const C*>(&inOriginal[0]));
     }
 };
 
@@ -227,6 +253,8 @@ class CVimToDatasmith {
     // Create datasmith materials from Vim ones
     void CreateMaterials();
 
+    void CollectAttributes();
+
     // Initialize the converter from Vim scene
     void ProcessGeometry();
 
@@ -256,14 +284,13 @@ class CVimToDatasmith {
                                         MapVimMaterialIdToDsMeshMaterialIndice* outVimMaterialIdToDsMeshMaterialIndice);
 
     void CreateAllMetaDatas();
+    void CreateAllTags();
 
     // Extracted from parameters
     bool mNoHierarchicalInstance = false;
     std::string mVimFilePath;
     std::string mDatasmithFolderPath;
     std::string mDatasmithFileName;
-
-    const std::vector<int>* mVimNodeToElement = nullptr;
 
     // Material's collected informations
     class MaterialEntry {
@@ -317,22 +344,26 @@ class CVimToDatasmith {
       public:
         CActorEntry() {}
 
-        bool HasElement() const { return mActorElement != nullptr; }
+        bool HasElement() const { return mActorElement.IsValid(); }
 
-        void SetActor(IDatasmithActorElement* inActorElement) {
-            TestAssert(mActorElement == nullptr);
-            mActorElement = inActorElement;
+        void SetActor(const TSharedRef<IDatasmithActorElement>& inActorElement, NodeIndex inNodeIndex) {
+            if (inNodeIndex < mLowestNodeIndex)
+                mActorElement = inActorElement;
+            TestAssert(mActorElement.IsValid());
         }
 
-        IDatasmithActorElement* GetActorElement() { return mActorElement; }
+        IDatasmithActorElement* GetActorElement() { return mActorElement.Get(); }
 
         IDatasmithMetaDataElement& GetOrCreateMetadataElement(CVimToDatasmith* inVimToDatasmith);
 
+        void AddTag(const utf8_t* inTag, std::vector<int>& inVector, ElementIndex inIndex);
+
       private:
-        IDatasmithActorElement* mActorElement = nullptr;
-        IDatasmithMetaDataElement* mMetaDataElement = nullptr;
+        TSharedPtr<IDatasmithActorElement> mActorElement;
+        TSharedPtr<IDatasmithMetaDataElement> mMetaDataElement;
+        NodeIndex mLowestNodeIndex = NodeIndex::kNoNode;
     };
-    std::vector<CActorEntry> mVecNodesToActors;
+    std::vector<CActorEntry> mVecElementToActors;
 
     // Map Vim geometry index to datasmith mesh
     typedef std::unordered_map<GeometryIndex, TSharedPtr<IDatasmithMeshElement>> GeometryToDatasmithMeshMap;
@@ -345,9 +376,12 @@ class CVimToDatasmith {
     TAttributeVector<IndiceIndex, GeometryIndex> mGroupIndexOffets;
     TAttributeVector<VertexIndex, GeometryIndex> mGroupVertexOffets;
     TAttributeVector<MaterialId, FaceIndex> mMaterialIds;
-    std::unique_ptr<TVector<cMat4, InstanceIndex>> mInstancesTransform;
-    std::unique_ptr<TVector<ParentIndex, InstanceIndex>> mInstancesParent;
-    std::unique_ptr<TVector<GeometryIndex, InstanceIndex>> mInstancesSubgeometry;
+    std::unique_ptr<TVector<cMat4, NodeIndex>> mInstancesTransform;
+    std::unique_ptr<TVector<ParentIndex, NodeIndex>> mInstancesParent;
+    std::unique_ptr<TVector<GeometryIndex, NodeIndex>> mInstancesSubgeometry;
+
+    TIndexor<ElementIndex, NodeIndex> mVimNodeToVimElement;
+    TIndexor<StringIndex, ElementIndex> mElementToName;
 
     // Unprocessed vim data
     TAttributeVector<uint32_t> mObjectIds;
@@ -445,10 +479,10 @@ class CVimToDatasmith {
     class CGeometryEntry : CTaskMgr::ITask {
       public:
         // Constructor
-        CGeometryEntry(CVimToDatasmith* inVimToDatasmith, GeometryIndex inGeometry, InstanceIndex inDefinition);
+        CGeometryEntry(CVimToDatasmith* inVimToDatasmith, GeometryIndex inGeometry, NodeIndex inDefinition);
 
         // Add an instance.
-        void AddInstance(InstanceIndex inInstance);
+        void AddInstance(NodeIndex inInstance);
 
         // Create Datasmith actors
         void CreateActors();
@@ -457,26 +491,29 @@ class CVimToDatasmith {
         // Process the node's geometry (create datasmith mesh)
         void Run();
 
+        void AddActor(const TSharedRef<IDatasmithMeshActorElement>& inActor, NodeIndex inInstance);
+
         // Create an actor for the specified node
-        void CreateActor(InstanceIndex inInstance);
+        void CreateActor(NodeIndex inInstance);
 
         // Create an efficient actor for the specified instance
         void CreateHierarchicalInstancesActor();
 
         // Create the actor name based on it's content (take care of duplicates)
-        FString HashToName(Datasmith::FDatasmithHash& hasher, const FString& inLabel) const;
+        FString HashToName(Datasmith::FDatasmithHash& hasher, NodeIndex inInstance) const;
 
         CVimToDatasmith* const mVimToDatasmith; // The converter
         CMeshElement* mMeshElement = nullptr; // The mesh element that is geometry and affected material.
         GeometryIndex mGeometry = GeometryIndex::kNoGeometry;
-        InstanceIndex mDefinition = InstanceIndex::kNoInstance; // First instance is considered as the definition
-        std::unique_ptr<std::vector<InstanceIndex>> mInstances; // All other instances (exclude definition one)
+        NodeIndex mDefinition = NodeIndex::kNoNode; // First instance is considered as the definition
+        std::unique_ptr<std::vector<NodeIndex>> mInstances; // All other instances (exclude definition one)
     };
 
     std::vector<std::unique_ptr<CGeometryEntry>> mGeometryEntries; // vector of geometries
 
     std::map<std::string, const CGeometryEntry*> mMapInstancesNameToGeometry; // To detect name duplicate
 
+    void DumpStringColumn(const utf8_t* inTableName, const utf8_t* inColumnName, const std::vector<int>& inColumn) const;
     void DumpTable(const utf8_t* inMsg, const Vim::EntityTable& inTable, bool inContent) const;
 
     // For statistics purpose
@@ -485,6 +522,8 @@ class CVimToDatasmith {
     FTimeStat mReadTimeStat;
     FTimeStat mPrepareTimeStat;
     FTimeStat mConvertTimeStat;
+    FTimeStat mCreateMetaDataStat;
+    FTimeStat mCreateTagsStat;
     FTimeStat mValidationTimeStat;
     FTimeStat mWriteTimeStat;
 

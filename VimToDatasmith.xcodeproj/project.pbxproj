@@ -62,6 +62,7 @@
 		0276C33E26A5D079005A9769 /* DatasmithSceneValidator.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = DatasmithSceneValidator.cpp; sourceTree = "<group>"; };
 		0276C34026A66356005A9769 /* CTaskMgr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CTaskMgr.h; sourceTree = "<group>"; };
 		0276C34126A66356005A9769 /* CTaskMgr.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CTaskMgr.cpp; sourceTree = "<group>"; };
+		02772A6826B2310200C8A71C /* TestAll.command */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = TestAll.command; sourceTree = "<group>"; };
 		02A6020E26A9225600158384 /* TimeStat.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TimeStat.h; sourceTree = "<group>"; };
 		02A6020F26A9225600158384 /* TimeStat.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TimeStat.cpp; sourceTree = "<group>"; };
 		02E14364269DCF1D00856873 /* CVimToDatasmith.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CVimToDatasmith.h; sourceTree = "<group>"; };
@@ -110,6 +111,7 @@
 			children = (
 				02069DE626A1F8F2008861BA /* .clang-format */,
 				02069DE726A1F925008861BA /* clangformat.command */,
+				02772A6826B2310200C8A71C /* TestAll.command */,
 				0230D8C4269CA9EF00EE9AD6 /* Vim-Datasmith.xcconfig */,
 				0230D8C5269CA9EF00EE9AD6 /* VimToDatasmith.entitlements */,
 			);

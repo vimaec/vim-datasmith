@@ -124,23 +124,13 @@ class CTaskMgr::CTaskJointer {
     }
 
     // Join all task before continuing
-    void Join(bool inRethrow = true) {
-        if (mTaskCount != 0) {
-            std::unique_lock<std::mutex> lk(CTaskMgr::Get().mAccessControl);
-            while (mTaskCount != 0)
-                CTaskMgr::Get().mThreadControlConditionVariable.wait(lk, [this] { return mTaskCount != 0; });
-        }
-        if (inRethrow && mGotExceptionCount != 0) {
-            uint32_t gotExceptionCount = mGotExceptionCount;
-            mGotExceptionCount = 0;
-            ThrowMessage("CSmallTask::Join - Rethrow the task exception (%d)", uint32_t(gotExceptionCount));
-        }
-    }
+    void Join(bool inRethrow = true);
 
     // A task finish it work
     void RemoveTask(bool inGotException) {
         TestAssert(mTaskCount != 0);
-        --mTaskCount;
+        if (--mTaskCount == 0)
+            CTaskMgr::Get().mThreadControlConditionVariable.notify_one();
         if (inGotException)
             ++mGotExceptionCount;
     }
@@ -160,7 +150,7 @@ class CTaskMgr::CTaskJointer {
     const char* const mName;
 
     // Number of task to be executed
-    std::atomic<uint32_t> mTaskCount;
+    volatile std::atomic<uint32_t> mTaskCount;
 
     // Number of task that finish with an exception
     std::atomic<uint32_t> mGotExceptionCount;
