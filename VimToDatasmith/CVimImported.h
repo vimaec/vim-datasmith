@@ -63,6 +63,8 @@ class CVimImported {
     void DumpAssets() const;
     void DumpEntitiesTables() const;
 
+    void PrintStats();
+
   private:
     void CollectAttributes();
 

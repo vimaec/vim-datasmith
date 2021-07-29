@@ -43,11 +43,11 @@ class CVimToDatasmith {
     class CMeshDefinition;
     class CGeometryEntry;
 
-    class CMetadataContext;
+    class CMetadatasProcessor;
 
-public:
+  public:
     typedef std::unordered_map<MaterialId, int32_t> MapVimMaterialIdToDsMeshMaterialIndice;
-    
+
     CVimImported& mVim;
     CConvertVimToDatasmith& mConverter;
 
@@ -82,9 +82,6 @@ public:
     // Add Datasmith materials used to the scene
     void AddUsedMaterials();
 
-    // Print selected contents
-    void PrintStats();
-
     void CreateAllMetaDatas();
 
     void CreateAllTags();
@@ -110,6 +107,8 @@ public:
     std::vector<std::unique_ptr<CGeometryEntry>> mGeometryEntries; // vector of geometries
 
     std::map<std::string, const CGeometryEntry*> mMapInstancesNameToGeometry; // To detect name duplicate
+
+    std::mutex mMultiPurposeAccessControl;
 };
 
 } // namespace Vim2Ds

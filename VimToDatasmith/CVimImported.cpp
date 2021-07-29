@@ -93,6 +93,7 @@ void CVimImported::Prepare() {
     prepare.Join();
 
     TestAssert(mVimNodeToVimElement.Count() == mInstancesSubgeometry->Count());
+    PrintStats();
 }
 
 // In old vim files, the geometry is exported in world space, even when
@@ -279,6 +280,63 @@ void CVimImported::DumpAssets() const {
 void CVimImported::DumpEntitiesTables() const {
     for (auto table : mVimScene.mEntityTables)
         DumpTable(table.first.c_str(), table.second, true);
+}
+
+// Print selected contents
+void CVimImported::PrintStats() {
+    VerboseF("Positions %u, Indices=%u, Groups=%u, Instances=%u, Strings=%lu\n", mPositions.Count(), mIndices.Count(), mGroupVertexOffets.Count(),
+             mInstancesSubgeometry->Count(), mVimScene.mStrings.size());
+
+#if 0
+#if 0
+    TraceF("Instances count %u\n", mInstancesSubgeometry->Count());
+    size_t validParentsCount = 0;
+    size_t validGeometriesCount = 0;
+    size_t validTransformCount = 0;
+    for (NodeIndex index = NodeIndex(0); index < mInstancesSubgeometry->Count(); index = NodeIndex(index + 1)) {
+        GeometryIndex geometry = (*mInstancesSubgeometry)[index];
+        int32_t parent = (*mInstancesParent)[index];
+        const cMat4& nodeTrans = (*mInstancesTransform)[index];
+        if (parent != kNoParent || geometry != kNoGeometry) {
+            if (parent != kNoParent)
+                ++validParentsCount;
+            if (geometry != kNoGeometry)
+                ++validGeometriesCount;
+            std::string transfoString("Identity");
+            if (!nodeTrans.IsIdentity()) {
+                ++validTransformCount;
+                transfoString = ToString(nodeTrans, " ");
+            }
+            TraceF("\tNode[%u] Parent=%d, Geometry=%d, Transform={%s}\n", index, parent, geometry, transfoString.c_str());
+        }
+    }
+    TraceF("Instances - Parent=%lu, Geometries=%lu, Transform=%lu\n", validParentsCount, validGeometriesCount, validTransformCount);
+#endif
+#if 0
+    TraceF("String count %lu\n", mVimScene.mStrings.size());
+    for (size_t index = 0; index < mVimScene.mStrings.size(); ++index)
+        TraceF("\t%lu \"%s\"\n", index, mVimScene.mStrings[index]);
+#endif
+
+#if 0
+    TraceF("Entities count= %ld\n", mVimScene.mEntityTables.size());
+    for (const auto& entity : mVimScene.mEntityTables)
+        TraceF("\t%s\n", entity.first.c_str());
+    
+    TraceF("Assets count= %ld\n", mVimScene.mAssetsBFast.buffers.size());
+    for (const auto& asset : mVimScene.mAssetsBFast.buffers)
+        TraceF("\t%s\n", asset.name.c_str());
+    
+    mPositions.Print("Positions");
+    mIndices.Print("Indices");
+    mMaterialIds.Print("MaterialIds");
+    mObjectIds.Print("ObjectIdsX");
+    mGroupIndexOffets.Print("GroupIndexOffets");
+    mGroupVertexOffets.Print("GroupVertexOffets");
+    
+    mGroupIndexCounts.Print("GroupIndexCounts");
+#endif
+#endif
 }
 
 } // namespace Vim2Ds

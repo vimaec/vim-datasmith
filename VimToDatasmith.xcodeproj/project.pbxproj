@@ -16,6 +16,7 @@
 		0276C34226A66356005A9769 /* CTaskMgr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0276C34126A66356005A9769 /* CTaskMgr.cpp */; };
 		02772A6D26B305E200C8A71C /* CVimImported.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02772A6B26B305E200C8A71C /* CVimImported.cpp */; };
 		02772A7026B3275B00C8A71C /* CConvertVimToDatasmith.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02772A6F26B3275B00C8A71C /* CConvertVimToDatasmith.cpp */; };
+		02772A7826B360ED00C8A71C /* CGeometryEntry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02772A7726B360ED00C8A71C /* CGeometryEntry.cpp */; };
 		02A6021026A9225600158384 /* TimeStat.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02A6020F26A9225600158384 /* TimeStat.cpp */; };
 		02E14366269DCF1D00856873 /* CVimToDatasmith.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E14365269DCF1D00856873 /* CVimToDatasmith.cpp */; };
 /* End PBXBuildFile section */
@@ -71,6 +72,14 @@
 		02772A6C26B305E200C8A71C /* CVimImported.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CVimImported.h; sourceTree = "<group>"; };
 		02772A6E26B3275B00C8A71C /* CConvertVimToDatasmith.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CConvertVimToDatasmith.h; sourceTree = "<group>"; };
 		02772A6F26B3275B00C8A71C /* CConvertVimToDatasmith.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CConvertVimToDatasmith.cpp; sourceTree = "<group>"; };
+		02772A7126B352C200C8A71C /* CMaterialEntry.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CMaterialEntry.h; sourceTree = "<group>"; };
+		02772A7226B353F100C8A71C /* CTextureEntry.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CTextureEntry.h; sourceTree = "<group>"; };
+		02772A7326B355D500C8A71C /* CActorEntry.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CActorEntry.h; sourceTree = "<group>"; };
+		02772A7426B357F000C8A71C /* CMeshDefinition.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CMeshDefinition.h; sourceTree = "<group>"; };
+		02772A7526B35ABC00C8A71C /* CMeshElement.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CMeshElement.h; sourceTree = "<group>"; };
+		02772A7626B3601C00C8A71C /* CGeometryEntry.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CGeometryEntry.h; sourceTree = "<group>"; };
+		02772A7726B360ED00C8A71C /* CGeometryEntry.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CGeometryEntry.cpp; sourceTree = "<group>"; };
+		02772A7926B36F0100C8A71C /* CMetadatasProcessor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CMetadatasProcessor.h; sourceTree = "<group>"; };
 		02A6020E26A9225600158384 /* TimeStat.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TimeStat.h; sourceTree = "<group>"; };
 		02A6020F26A9225600158384 /* TimeStat.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TimeStat.cpp; sourceTree = "<group>"; };
 		02E14364269DCF1D00856873 /* CVimToDatasmith.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CVimToDatasmith.h; sourceTree = "<group>"; };
@@ -162,11 +171,19 @@
 		0230D8DD269CA9F000EE9AD6 /* VimToDatasmith */ = {
 			isa = PBXGroup;
 			children = (
+				02772A7326B355D500C8A71C /* CActorEntry.h */,
 				02772A6F26B3275B00C8A71C /* CConvertVimToDatasmith.cpp */,
 				02772A6E26B3275B00C8A71C /* CConvertVimToDatasmith.h */,
+				02772A7726B360ED00C8A71C /* CGeometryEntry.cpp */,
+				02772A7626B3601C00C8A71C /* CGeometryEntry.h */,
+				02772A7126B352C200C8A71C /* CMaterialEntry.h */,
 				02772A6A26B2FE3A00C8A71C /* CMD5Hash.h */,
+				02772A7426B357F000C8A71C /* CMeshDefinition.h */,
+				02772A7526B35ABC00C8A71C /* CMeshElement.h */,
+				02772A7926B36F0100C8A71C /* CMetadatasProcessor.h */,
 				0276C34126A66356005A9769 /* CTaskMgr.cpp */,
 				0276C34026A66356005A9769 /* CTaskMgr.h */,
+				02772A7226B353F100C8A71C /* CTextureEntry.h */,
 				02772A6B26B305E200C8A71C /* CVimImported.cpp */,
 				02772A6C26B305E200C8A71C /* CVimImported.h */,
 				02E14365269DCF1D00856873 /* CVimToDatasmith.cpp */,
@@ -281,6 +298,7 @@
 				02772A6D26B305E200C8A71C /* CVimImported.cpp in Sources */,
 				0230D8E8269CA9F000EE9AD6 /* VimToDatasmith.cpp in Sources */,
 				02E14366269DCF1D00856873 /* CVimToDatasmith.cpp in Sources */,
+				02772A7826B360ED00C8A71C /* CGeometryEntry.cpp in Sources */,
 				0230D8E9269CA9F000EE9AD6 /* main.cpp in Sources */,
 				0276C33826A383C5005A9769 /* DatasmithHashTools.cpp in Sources */,
 				0276C33F26A5D0D5005A9769 /* DatasmithSceneValidator.cpp in Sources */,
