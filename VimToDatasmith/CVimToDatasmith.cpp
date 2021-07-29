@@ -31,6 +31,10 @@ DISABLE_SDK_WARNINGS_END
 
 #include <iostream>
 
+extern "C" {
+    bool CreateDirectoryW(wchar_t* lpPathName, void* lpSecurityAttributes);
+}
+
 namespace Vim2Ds {
 
 // Constructor
@@ -65,12 +69,6 @@ IDatasmithMetaDataElement& CVimToDatasmith::CActorEntry::GetOrCreateMetadataElem
         inVimToDatasmith->mDatasmithScene->AddMetaData(mMetaDataElement);
     }
     return *mMetaDataElement;
-}
-
-void CVimToDatasmith::CActorEntry::AddTag(const utf8_t* inTag, std::vector<int>& inVector, ElementIndex inIndex) {
-    if (inIndex < inVector.size()) {
-        inVector[inIndex];
-    }
 }
 
 // Destructor
@@ -180,13 +178,21 @@ CVimToDatasmith::CTextureEntry::CTextureEntry(CVimToDatasmith* inVimToDatasmith,
     mDatasmithLabel = UTF8_TO_TCHAR(mImageBuffer.name.c_str());
 }
 
+
 bool CreateFolder(const utf8_t* inFolderName) {
     struct stat st = {0};
     if (stat(inFolderName, &st) == -1) {
+#if winOS
+        if (CreateDirectoryW(UTF8_TO_TCHAR(inFolderName), nullptr) != true) {
+            DebugF("CreateFolder - Can't create folder: \"%s\" error=%d\n", inFolderName, errno);
+            return false;
+        }
+#else
         if (mkdir(inFolderName, S_IRWXU | S_IRWXG | S_IRWXO) != 0) {
             DebugF("CreateFolder - Can't create folder: \"%s\" error=%d\n", inFolderName, errno);
             return false;
         }
+#endif
     }
     return true;
 }
@@ -209,7 +215,7 @@ void CVimToDatasmith::CTextureEntry::CopyTextureInAssets() {
 
 #ifndef __clang__
     FILE* file = nullptr;
-    if (fopen_s(&file, filePath.c_str(), "wb") != 0)
+    if (_wfopen_s(&file, *filePathName, TEXT("wb")) != 0)
         file = nullptr;
 #else
     FILE* file = fopen(TCHAR_TO_UTF8(*filePathName), "wb");
