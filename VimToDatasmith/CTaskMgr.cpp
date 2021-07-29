@@ -111,11 +111,17 @@ void CTaskMgr::Join() {
         TraceF("CTaskMgr::Join - Wait for %ld task to be processed ", mTaskQueue.size());
         hasWorks = true;
     }
+    clock_t previous = clock();
     while (mNbRunning != 0 || (!mTaskQueue.empty() && !mTerminate)) {
-        TraceF(".");
-        //        TraceF("CTaskMgr::Join - Wait for %ld task to be processed\n", mTaskQueue.size());
-        mThreadControlConditionVariable.notify_all(); // Wake all waiting threads
-        mThreadControlConditionVariable.wait_for(lk, 100ms, [this] { return mNbRunning == 0 && (mTaskQueue.empty() || mTerminate); });
+        clock_t current = clock();
+        if (current - previous > CLOCKS_PER_SEC) {
+            previous = current;
+            TraceF(".");
+        }
+        lk.unlock();
+        mThreadControlConditionVariable.notify_one();
+        std::this_thread::sleep_for(1ms);
+        lk.lock();
     }
     if (hasWorks)
         TraceF("\nCTaskMgr::Join - Done\n");
@@ -158,8 +164,10 @@ void CTaskMgr::CTaskJointer::Join(bool inRethrow) {
         CTaskMgr& mgr = CTaskMgr::Get();
         std::unique_lock<std::mutex> lk(mgr.mAccessControl);
         while (mTaskCount != 0) {
+            lk.unlock();
             mgr.mThreadControlConditionVariable.notify_one();
-            mgr.mThreadControlConditionVariable.wait_for(lk, 1ms, [this] { return mTaskCount != 0; });
+            std::this_thread::sleep_for(1ms);
+            lk.lock();
         }
     }
     if (inRethrow && mGotExceptionCount != 0) {
