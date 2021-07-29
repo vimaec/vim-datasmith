@@ -339,6 +339,8 @@ class CVimToDatasmith {
 
     std::unordered_map<utf8_string, std::unique_ptr<CTextureEntry>> mVimTextureToTextureMap;
 
+    class CMetadataContext;
+
     // Material's collected informations
     class CActorEntry {
       public:
@@ -390,6 +392,8 @@ class CVimToDatasmith {
     // Working/Computed data
     TAllocatedVector<IndiceIndex, GeometryIndex> mGroupIndexCounts;
     TAllocatedVector<cVec3, VertexIndex> mNormals;
+
+    std::mutex mDatasmithSceneAccessControl;
 
     // Datasmith scene and assets output path
     TSharedPtr<IDatasmithScene> mDatasmithScene;

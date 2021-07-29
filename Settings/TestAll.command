@@ -12,4 +12,4 @@ ${CmdPath} "${VIMTestFolder}/Skanska_next.vim"
 ${CmdPath} "${VIMTestFolder}/_MAIN-STADIUM-R19.vim"
 ${CmdPath} "${VIMTestFolder}/rac_basic_sample_project.vim"
 
-open ${VIMTestFolder}
+open "${VIMTestFolder}"

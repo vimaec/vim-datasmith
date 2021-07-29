@@ -66,6 +66,8 @@ IDatasmithMetaDataElement& CVimToDatasmith::CActorEntry::GetOrCreateMetadataElem
         FString metadataName(FString::Printf(TEXT("MetaData_%s"), mActorElement->GetName()));
         mMetaDataElement = FDatasmithSceneFactory::CreateMetaData(*metadataName);
         mMetaDataElement->SetAssociatedElement(mActorElement);
+
+        std::unique_lock<std::mutex> lk(inVimToDatasmith->mDatasmithSceneAccessControl);
         inVimToDatasmith->mDatasmithScene->AddMetaData(mMetaDataElement);
     }
     return *mMetaDataElement;
@@ -126,6 +128,8 @@ void CVimToDatasmith::ReadVimFile() {
     mReadTimeStat.FinishNow();
 #if 0
     DumpAssets();
+#endif
+#if 0
     DumpEntitiesTables();
 #endif
 }
@@ -266,6 +270,7 @@ void CVimToDatasmith::CTextureEntry::AddToScene() {
 
         mDatasmithTexture->SetLabel(*mDatasmithLabel);
         mDatasmithTexture->SetSRGB(EDatasmithColorSpace::sRGB);
+        std::unique_lock<std::mutex> lk(mVimToDatasmith->mDatasmithSceneAccessControl);
         mVimToDatasmith->mDatasmithScene->AddTexture(mDatasmithTexture);
     }
 }
@@ -363,8 +368,71 @@ void CVimToDatasmith::CreateMaterials() {
     }
 }
 
+class CVimToDatasmith::CMetadataContext {
+  public:
+    CMetadataContext(CVimToDatasmith* inVimTodatasmith)
+    : mVimTodatasmith(inVimTodatasmith)
+    , mProperties(inVimTodatasmith->mVimScene.mEntityTables["table:Rvt.Element"].mProperties) {
+        mStart = mProperties.size() > 0 ? &mProperties[0] : nullptr;
+        mEnd = mStart + mProperties.size();
+    }
+
+    void Proceed() {
+        const Vim::SerializableProperty* start;
+        const Vim::SerializableProperty* end;
+        CVimToDatasmith::CActorEntry* actorEntry = GetObject(&start, &end);
+        while (actorEntry != nullptr) {
+            while (start < end) {
+                TSharedPtr<IDatasmithKeyValueProperty> dsProperty =
+                    FDatasmithSceneFactory::CreateKeyValueProperty(UTF8_TO_TCHAR(mVimTodatasmith->GetVimString(StringIndex(start->mName))));
+                dsProperty->SetValue(UTF8_TO_TCHAR(mVimTodatasmith->GetVimString(StringIndex(start->mValue))));
+                dsProperty->SetPropertyType(EDatasmithKeyValuePropertyType::String);
+                actorEntry->GetOrCreateMetadataElement(mVimTodatasmith).AddProperty(dsProperty);
+                ++start;
+            }
+            actorEntry = GetObject(&start, &end);
+        }
+    }
+
+  private:
+    CVimToDatasmith::CActorEntry* GetObject(const Vim::SerializableProperty** outStart, const Vim::SerializableProperty** outEnd) {
+        std::unique_lock<std::mutex> lk(mAccessControl);
+        while (mStart < mEnd) {
+            ElementIndex elementIndex = ElementIndex(mStart->mEntityId);
+            *outStart = mStart;
+            ++mStart;
+            if (elementIndex < mVimTodatasmith->mVecElementToActors.size()) {
+                CVimToDatasmith::CActorEntry& actorEntry = mVimTodatasmith->mVecElementToActors[elementIndex];
+                if (actorEntry.HasElement()) {
+                    while (mStart < mEnd && ElementIndex(mStart->mEntityId) == elementIndex)
+                        ++mStart;
+                    *outEnd = mStart;
+                    return &actorEntry;
+                }
+            }
+        }
+        *outStart = nullptr;
+        *outEnd = nullptr;
+        return nullptr;
+    }
+
+    std::mutex mAccessControl;
+    const Vim::SerializableProperty* mStart;
+    const Vim::SerializableProperty* mEnd;
+    CVimToDatasmith* const mVimTodatasmith;
+    const std::vector<Vim::SerializableProperty>& mProperties;
+};
+
 void CVimToDatasmith::CreateAllMetaDatas() {
     mCreateMetaDataStat.BeginNow();
+#if 1
+    CMetadataContext metadataContext(this);
+    CTaskMgr::CTaskJointer createAllMetaDatas("CreateAllMetaDatas");
+    for (int i = 0; i < CTaskMgr::Get().GetNbProcessors(); ++i)
+        (new CTaskMgr::TJoinableFunctorTask<CMetadataContext*>([](CMetadataContext* inMetadataContext) { inMetadataContext->Proceed(); }, &metadataContext))
+            ->Start(&createAllMetaDatas);
+    createAllMetaDatas.Join();
+#else
     Vim::EntityTable& elementTable = mVimScene.mEntityTables["table:Rvt.Element"];
     for (auto& property : elementTable.mProperties) {
         ElementIndex elementIndex = ElementIndex(property.mEntityId);
@@ -380,6 +448,7 @@ void CVimToDatasmith::CreateAllMetaDatas() {
         } else
             TraceF("CVimToDatasmith::CreateAllMetaDatas - Invalid element index %u\n", elementIndex);
     }
+#endif
     mCreateMetaDataStat.FinishNow();
 }
 
@@ -401,7 +470,7 @@ void CVimToDatasmith::CreateAllTags() {
             if (elementIndex < elementToLevel.size()) {
                 int level = elementToLevel[elementIndex];
                 if (level != -1)
-                    actor->AddTag(*FString::Printf(TEXT("VIM.Category.%d"), level));
+                    actor->AddTag(*FString::Printf(TEXT("VIM.Level.%d"), level));
             }
             if (elementIndex < elementToCategory.size()) {
                 int category = elementToCategory[elementIndex];
@@ -730,6 +799,7 @@ void CVimToDatasmith::AddUsedMaterials() {
             if (material.mTexture != nullptr) {
                 material.mTexture->AddToScene();
             }
+            std::unique_lock<std::mutex> lk(mDatasmithSceneAccessControl);
             mDatasmithScene->AddMaterial(material.mMaterialElement);
         }
     }
@@ -949,7 +1019,7 @@ CVimToDatasmith::CMeshElement* CVimToDatasmith::CMeshDefinition::Initialize(FDat
             meshElement->SetMaterial(materialEntry.mMaterialElement->GetName(), iter.second);
         }
         {
-            std::lock_guard<std::mutex> lock(sAccessControl);
+            std::lock_guard<std::mutex> lock(inVimToDatasmith.mDatasmithSceneAccessControl);
             inVimToDatasmith.mDatasmithScene->AddMesh(meshElement);
         }
     }
