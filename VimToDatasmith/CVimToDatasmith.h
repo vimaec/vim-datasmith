@@ -515,6 +515,8 @@ class CVimToDatasmith {
 
     void DumpStringColumn(const utf8_t* inTableName, const utf8_t* inColumnName, const std::vector<int>& inColumn) const;
     void DumpTable(const utf8_t* inMsg, const Vim::EntityTable& inTable, bool inContent) const;
+    void DumpAssets() const;
+    void DumpEntitiesTables() const;
 
     // For statistics purpose
     FTimeStat mStartTimeStat;

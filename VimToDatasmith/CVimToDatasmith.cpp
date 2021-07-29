@@ -32,7 +32,7 @@ DISABLE_SDK_WARNINGS_END
 #include <iostream>
 
 extern "C" {
-    bool CreateDirectoryW(wchar_t* lpPathName, void* lpSecurityAttributes);
+bool CreateDirectoryW(wchar_t* lpPathName, void* lpSecurityAttributes);
 }
 
 namespace Vim2Ds {
@@ -124,6 +124,10 @@ void CVimToDatasmith::ReadVimFile() {
     if (vimReadResult != Vim::VimErrorCodes::Success)
         ThrowMessage("CVimToDatasmith::ReadVimFile - ReadFile return error %d", vimReadResult);
     mReadTimeStat.FinishNow();
+#if 0
+    DumpAssets();
+    DumpEntitiesTables();
+#endif
 }
 
 inline void DumpIndexColumn(const utf8_t* inTableName, const utf8_t* inColumnName, const std::vector<int>& inColumn) {
@@ -167,6 +171,17 @@ void CVimToDatasmith::DumpTable(const utf8_t* inMsg, const Vim::EntityTable& inT
     TraceF("\n");
 }
 
+void CVimToDatasmith::DumpAssets() const {
+    TraceF("Assets count= %ld\n", mVimScene.mAssetsBFast.buffers.size());
+    for (const auto& asset : mVimScene.mAssetsBFast.buffers)
+        TraceF("\t%s\n", asset.name.c_str());
+}
+
+void CVimToDatasmith::DumpEntitiesTables() const {
+    for (auto table : mVimScene.mEntityTables)
+        DumpTable(table.first.c_str(), table.second, true);
+}
+
 CVimToDatasmith::CTextureEntry::CTextureEntry(CVimToDatasmith* inVimToDatasmith, const bfast::Buffer& inImageBuffer)
 : mVimToDatasmith(inVimToDatasmith)
 , mImageBuffer(inImageBuffer) {
@@ -177,7 +192,6 @@ CVimToDatasmith::CTextureEntry::CTextureEntry(CVimToDatasmith* inVimToDatasmith,
     mDatasmithName = MD5Hash.ToString();
     mDatasmithLabel = UTF8_TO_TCHAR(mImageBuffer.name.c_str());
 }
-
 
 bool CreateFolder(const utf8_t* inFolderName) {
     struct stat st = {0};
@@ -281,31 +295,7 @@ CVimToDatasmith::CTextureEntry* CVimToDatasmith::CreateTexture(const utf8_t* inT
 void CVimToDatasmith::CreateMaterials() {
     VerboseF("CVimToDatasmith::CreateMaterials\n");
     Vim::EntityTable& materialTable = mVimScene.mEntityTables["table:Rvt.Material"];
-#if 0
-    TraceF("Assets count= %ld\n", mVimScene.mAssetsBFast.buffers.size());
-    for (const auto& asset : mVimScene.mAssetsBFast.buffers)
-        TraceF("\t%s\n", asset.name.c_str());
 
-    //    DumpTable(materialTable);
-    for (auto table : mVimScene.mEntityTables)
-        DumpTable(table.first.c_str(), table.second, true);
-
-        /*
-        const std::vector<double>& colorUvScalingX = materialTable.mNumericColumns["ColorUvScaling.X"];
-        const std::vector<double>& colorUvScalingY = materialTable.mNumericColumns["ColorUvScaling.Y"];
-        const std::vector<double>& colorUvOffsetX = materialTable.mNumericColumns["ColorUvOffset.X"];
-        const std::vector<double>& colorUvOffsetY = materialTable.mNumericColumns["ColorUvOffset.Y"];
-        const std::vector<double>& normalUvScalingX = materialTable.mNumericColumns["NormalUvScaling.X"];
-        const std::vector<double>& normalUvScalingY = materialTable.mNumericColumns["NormalUvScaling.Y"];
-        const std::vector<double>& normalUvOffsetX = materialTable.mNumericColumns["NormalUvOffset.X"];
-        const std::vector<double>& normalUvOffsetY = materialTable.mNumericColumns["NormalUvOffset.Y"];
-        const std::vector<double>& normalAmount = materialTable.mNumericColumns["NormalAmount"];
-        for (size_t i = 0; i < colorUvScalingX.size(); ++i)
-            TraceF("CVimToDatasmith::CreateMaterials - Color UvScaling(%lf, %lf) UvOffset(%lf, %lf) Normal UvScaling(%lf, %lf) UvOffset(%lf, %lf)
-        Amount(%lf)\n", colorUvScalingX[i], colorUvScalingY[i], colorUvOffsetX[i], colorUvOffsetY[i], normalUvScalingX[i], normalUvScalingY[i],
-        normalUvOffsetX[i], normalUvOffsetY[i], normalAmount[i]);
-         */
-#endif
     const std::vector<int>& nameArray = materialTable.mStringColumns["Name"];
     const std::vector<int>& textureNameArray = materialTable.mStringColumns["ColorTextureFile"];
 
