@@ -57,7 +57,7 @@ void Usage() {
 void ExtractPathNameExtension(const std::string& inFilePathName, std::string* outPath, std::string* outName, std::string* outExtension) {
     std::string::size_type posName = inFilePathName.find_last_of(DirectorySeparator) + 1;
     std::string::size_type posExtension = inFilePathName.find_last_of('.');
-    if (posExtension >= posName) {
+    if (posExtension != std::string::npos && posExtension >= posName) {
         if (outExtension != nullptr)
             *outExtension = inFilePathName.substr(posExtension);
     } else
