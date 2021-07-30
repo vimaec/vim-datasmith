@@ -51,6 +51,7 @@ class FTimeStat {
 #define MeasureTime(name, code, msgLevel)      \
     {                                          \
         FTimeStat name##Stat;                  \
+        name##Stat.BeginNow();                 \
         code;                                  \
         name##Stat.FinishNow();                \
         name##Stat.PrintTime(#name, msgLevel); \

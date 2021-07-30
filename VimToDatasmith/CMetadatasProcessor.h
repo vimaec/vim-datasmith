@@ -16,7 +16,7 @@ class CVimToDatasmith::CMetadatasProcessor {
 
     void Process() {
         CTaskMgr::CTaskJointer createAllMetaDatas("CreateAllMetaDatas");
-        for (int i = 0; i < CTaskMgr::Get().GetNbProcessors(); ++i)
+        for (unsigned i = 0; i < CTaskMgr::Get().GetNbProcessors(); ++i)
             (new CTaskMgr::TJoinableFunctorTask<CMetadatasProcessor*>([](CMetadatasProcessor* me) { me->Proceed(); }, this))->Start(&createAllMetaDatas);
         createAllMetaDatas.Join();
     }

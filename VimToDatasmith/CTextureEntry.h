@@ -4,6 +4,13 @@
 #include "CConvertVimToDatasmith.h"
 #include "CVimToDatasmith.h"
 
+
+#if winOS
+extern "C" {
+    bool CreateDirectoryW(wchar_t* lpPathName, void* lpSecurityAttributes);
+}
+#endif
+
 namespace Vim2Ds {
 
 inline bool CreateFolder(const utf8_t* inFolderName) {
