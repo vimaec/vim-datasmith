@@ -1,7 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "TimeStat.h"
-#include "DebugTools.h"
 
 #if macOS
 #include <sys/time.h>
@@ -14,37 +13,56 @@
 
 namespace Vim2Ds {
 
-// Contructor (Get current process CPU time and real time)
-void FTimeStat::ReStart() {
-    CpuTime = CpuTimeClock();
-    RealTime = RealTimeClock();
+// Reset to current process CPU time and real time
+void FTimeStat::BeginNow() {
+    mStartCpuTime = CpuTimeClock();
+    mStartRealTime = RealTimeClock();
+    mFinishCpuTime = 0.0;
+    mFinishRealTime = 0.0;
+}
+
+// Finish to current process CPU time and real time
+void FTimeStat::FinishNow() {
+    mFinishCpuTime = CpuTimeClock();
+    mFinishRealTime = RealTimeClock();
 }
 
 // Cumulate time from the other
 void FTimeStat::AddDiff(const FTimeStat& InOther) {
-    CpuTime += CpuTimeClock() - InOther.CpuTime;
-    double RealSeconds = RealTimeClock() - InOther.RealTime;
-    if (RealSeconds < 0) // Before and after midnight ?
-    {
-        RealSeconds += 24 * 60 * 60;
-    }
-    RealTime += RealSeconds;
+    mStartCpuTime -= InOther.GetCpuTime();
+    mStartRealTime -= InOther.GetRealTime();
 }
 
 // Print time differences
-void FTimeStat::PrintDiff(const char* InStatLabel, const FTimeStat& InStart) {
-    double CpuSeconds = CpuTime - InStart.CpuTime;
-    double RealSeconds = RealTime - InStart.RealTime;
-    if (RealSeconds < 0) // Before and after midnight ?
-    {
+void FTimeStat::PrintTime(const char* InStatLabel, EP2DB inMsgLevel) {
+    double CpuSeconds = mFinishCpuTime - mStartCpuTime;
+    double RealSeconds = GetRealTime();
+    const char* warning = "";
+    if (mStartCpuTime != 0.0) {
+        if (CpuSeconds < 0.0) {
+            CpuSeconds = CpuTimeClock() - mStartCpuTime;
+            RealSeconds = RealTimeClock() - mStartRealTime;
+            warning = "*** FTimeStat::FinishNow hasn't been called *** ";
+        }
+
+        if (RealSeconds >= 100.0)
+            Vim2Ds::Printf2DB(inMsgLevel, "%sSeconds for %s cpu=%.0lfs, real=%.0lfs\n", warning, InStatLabel, CpuSeconds, RealSeconds);
+        else if (CpuSeconds >= 100.0)
+            Vim2Ds::Printf2DB(inMsgLevel, "%sSeconds for %s cpu=%.0lfs, real=%.2lgs\n", warning, InStatLabel, CpuSeconds, RealSeconds);
+        else
+            Vim2Ds::Printf2DB(inMsgLevel, "%sSeconds for %s cpu=%.2lgs, real=%.2lgs\n", warning, InStatLabel, CpuSeconds, RealSeconds);
+    } else if (mFinishCpuTime != 0.0)
+        Vim2Ds::Printf2DB(inMsgLevel, "FTimeStat::PrintTime - BeginNow() hasn't been called for stat %s\n", InStatLabel);
+}
+
+// Return elapsed  real time
+double FTimeStat::GetRealTime() const {
+    double RealSeconds = mFinishRealTime - mStartRealTime;
+    if (RealSeconds < 0) {
+        // Before and after midnight ?
         RealSeconds += 24 * 60 * 60;
     }
-    if (RealSeconds >= 100.0)
-        TraceF("Seconds for %s cpu=%.0lfs, real=%.0lfs\n", InStatLabel, CpuSeconds, RealSeconds);
-    else if (CpuSeconds >= 100.0)
-        TraceF("Seconds for %s cpu=%.0lfs, real=%.2lgs\n", InStatLabel, CpuSeconds, RealSeconds);
-    else
-        TraceF("Seconds for %s cpu=%.2lgs, real=%.2lgs\n", InStatLabel, CpuSeconds, RealSeconds);
+    return RealSeconds;
 }
 
 // Tool get current real time clock

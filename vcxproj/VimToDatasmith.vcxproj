@@ -17,7 +17,10 @@
     <ClCompile Include="..\reference\Utils.cpp" />
     <ClCompile Include="..\UnrealEngine\DatasmithHashTools.cpp" />
     <ClCompile Include="..\UnrealEngine\DatasmithSceneValidator.cpp" />
+    <ClCompile Include="..\VimToDatasmith\CConvertVimToDatasmith.cpp" />
+    <ClCompile Include="..\VimToDatasmith\CGeometryEntry.cpp" />
     <ClCompile Include="..\VimToDatasmith\CTaskMgr.cpp" />
+    <ClCompile Include="..\VimToDatasmith\CVimImported.cpp" />
     <ClCompile Include="..\VimToDatasmith\CVimToDatasmith.cpp" />
     <ClCompile Include="..\VimToDatasmith\DebugTools.cpp" />
     <ClCompile Include="..\VimToDatasmith\main.cpp" />
@@ -39,7 +42,16 @@
     <ClInclude Include="..\src\vim.h" />
     <ClInclude Include="..\UnrealEngine\DatasmithHashTools.h" />
     <ClInclude Include="..\UnrealEngine\DatasmithSceneValidator.h" />
+    <ClInclude Include="..\VimToDatasmith\CActorEntry.h" />
+    <ClInclude Include="..\VimToDatasmith\CConvertVimToDatasmith.h" />
+    <ClInclude Include="..\VimToDatasmith\CGeometryEntry.h" />
+    <ClInclude Include="..\VimToDatasmith\CMaterialEntry.h" />
+    <ClInclude Include="..\VimToDatasmith\CMD5Hash.h" />
+    <ClInclude Include="..\VimToDatasmith\CMeshDefinition.h" />
+    <ClInclude Include="..\VimToDatasmith\CMeshElement.h" />
     <ClInclude Include="..\VimToDatasmith\CTaskMgr.h" />
+    <ClInclude Include="..\VimToDatasmith\CTextureEntry.h" />
+    <ClInclude Include="..\VimToDatasmith\CVimImported.h" />
     <ClInclude Include="..\VimToDatasmith\CVimToDatasmith.h" />
     <ClInclude Include="..\VimToDatasmith\DebugTools.h" />
     <ClInclude Include="..\VimToDatasmith\TimeStat.h" />

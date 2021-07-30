@@ -2,7 +2,6 @@
 // Licensed under the MIT License 1.0
 
 #include "CTaskMgr.h"
-#include "DebugTools.h"
 
 #include <chrono>
 #include <stdexcept>
@@ -31,11 +30,11 @@ void CTaskMgr::RunITask(CTaskMgr* inMgr) {
     }
 }
 
-CTaskMgr* CTaskMgr::GetMgr() {
+CTaskMgr& CTaskMgr::Get() {
     if (STaskMgr == nullptr) {
         STaskMgr = new CTaskMgr();
     }
-    return STaskMgr;
+    return *STaskMgr;
 }
 
 void CTaskMgr::DeleteMgr() {
@@ -48,16 +47,16 @@ void CTaskMgr::DeleteMgr() {
 
 // Constructor
 CTaskMgr::CTaskMgr()
-: mTreadingEnabled(true) {
-    if (mTreadingEnabled) {
+: mThreadingEnabled(true) {
+    if (mThreadingEnabled) {
         // One thread by processor
-        unsigned nbProcessors = std::thread::hardware_concurrency();
-        if (nbProcessors == 0) {
-            nbProcessors = 1;
+        mNbProcessors = std::thread::hardware_concurrency();
+        if (mNbProcessors == 0) {
+            mNbProcessors = 1;
         }
-        mTreads.resize(nbProcessors);
-        mNbRunning = nbProcessors;
-        for (unsigned i = 0; i < nbProcessors; i++) {
+        mTreads.resize(mNbProcessors);
+        mNbRunning = mNbProcessors;
+        for (unsigned i = 0; i < mNbProcessors; i++) {
             mTreads[i].reset(new std::thread(RunITask, this));
         }
     }
@@ -84,7 +83,7 @@ CTaskMgr::~CTaskMgr() {
 
 // Add task
 void CTaskMgr::AddTask(ITask* inTask) {
-    if (mTreadingEnabled) {
+    if (mThreadingEnabled) {
         // Add the task to the queue
         {
             std::unique_lock<std::mutex> lk(mAccessControl);
@@ -92,7 +91,7 @@ void CTaskMgr::AddTask(ITask* inTask) {
                 throw std::runtime_error("Adding task to a terminated CTaskMgr");
             mTaskQueue.push(inTask);
         }
-        mThreadControlConditionVariable.notify_one();
+        mThreadControlConditionVariable.notify_all();
     } else {
         try {
             inTask->Run();
@@ -112,11 +111,17 @@ void CTaskMgr::Join() {
         TraceF("CTaskMgr::Join - Wait for %ld task to be processed ", mTaskQueue.size());
         hasWorks = true;
     }
+    clock_t previous = clock();
     while (mNbRunning != 0 || (!mTaskQueue.empty() && !mTerminate)) {
-        TraceF(".");
-        //        TraceF("CTaskMgr::Join - Wait for %ld task to be processed\n", mTaskQueue.size());
-        mThreadControlConditionVariable.notify_all(); // Wake all waiting threads
-        mThreadControlConditionVariable.wait_for(lk, 100ms, [this] { return mNbRunning == 0 && (mTaskQueue.empty() || mTerminate); });
+        clock_t current = clock();
+        if (current - previous > CLOCKS_PER_SEC) {
+            previous = current;
+            TraceF(".");
+        }
+        lk.unlock();
+        mThreadControlConditionVariable.notify_one();
+        std::this_thread::sleep_for(1ms);
+        lk.lock();
     }
     if (hasWorks)
         TraceF("\nCTaskMgr::Join - Done\n");
@@ -151,6 +156,25 @@ CTaskMgr::ITask* CTaskMgr::GetTask() {
     }
 
     return task;
+}
+
+// Join all task before continuing
+void CTaskMgr::CTaskJointer::Join(bool inRethrow) {
+    if (mTaskCount != 0) {
+        CTaskMgr& mgr = CTaskMgr::Get();
+        std::unique_lock<std::mutex> lk(mgr.mAccessControl);
+        while (mTaskCount != 0) {
+            lk.unlock();
+            mgr.mThreadControlConditionVariable.notify_one();
+            std::this_thread::sleep_for(1ms);
+            lk.lock();
+        }
+    }
+    if (inRethrow && mGotExceptionCount != 0) {
+        uint32_t gotExceptionCount = mGotExceptionCount;
+        mGotExceptionCount = 0;
+        ThrowMessage("CTaskJointer::Join - Rethrow the task exception (%d)", uint32_t(gotExceptionCount));
+    }
 }
 
 } // namespace Vim2Ds

@@ -22,6 +22,7 @@ DISABLE_SDK_WARNINGS_END
 #include <vector>
 
 int wmain(int argc, wchar_t* argv[], wchar_t* envp[]) {
+    // Convert parameters to utf8
     std::vector<Vim2Ds::utf8_string> parameters;
     for (int i = 0; i < argc; ++i)
         parameters.push_back(TCHAR_TO_UTF8(argv[i]));
@@ -29,6 +30,8 @@ int wmain(int argc, wchar_t* argv[], wchar_t* envp[]) {
     for (int i = 0; i < argc; ++i)
         paramArray.push_back(parameters[i].c_str());
     paramArray.push_back(nullptr);
+
+    // Call the convert function
     return Vim2Ds::Convert(argc, &paramArray[0]);
 }
 

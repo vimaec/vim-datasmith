@@ -2,9 +2,12 @@
 // Licensed under the MIT License 1.0
 
 #include "VimToDatasmith.h"
-#include "CVimToDatasmith.h"
+#include "CConvertVimToDatasmith.h"
 
+#include "CTaskMgr.h"
 #include "DebugTools.h"
+#include "cAABB.h"
+#include "cMat.h"
 
 DISABLE_SDK_WARNINGS_START
 
@@ -18,7 +21,33 @@ DISABLE_SDK_WARNINGS_END
 #define DirectorySeparator '/'
 #endif
 
+#if winOS
+extern "C" {
+// Sometime it's hard to include "windows.h'" headers.
+bool CreateDirectoryW(wchar_t* lpPathName, void* lpSecurityAttributes);
+}
+#endif
+
 namespace Vim2Ds {
+
+// Simple function to create a folder
+bool CreateFolder(const utf8_t* inFolderName) {
+    struct stat st = {0};
+    if (stat(inFolderName, &st) == -1) {
+#if winOS
+        if (CreateDirectoryW(UTF8_TO_TCHAR(inFolderName), nullptr) != true) {
+            DebugF("CreateFolder - Can't create folder: \"%s\" error=%d\n", inFolderName, errno);
+            return false;
+        }
+#else
+        if (mkdir(inFolderName, S_IRWXU | S_IRWXG | S_IRWXO) != 0) {
+            DebugF("CreateFolder - Can't create folder: \"%s\" error=%d\n", inFolderName, errno);
+            return false;
+        }
+#endif
+    }
+    return true;
+}
 
 void Usage() {
     DebugF("Usage: VimToDatasmith [-NoHierarchicalInstance] VimFilePath.vim [DatasmithFilePath.udatasmith]");
@@ -28,7 +57,7 @@ void Usage() {
 void ExtractPathNameExtension(const std::string& inFilePathName, std::string* outPath, std::string* outName, std::string* outExtension) {
     std::string::size_type posName = inFilePathName.find_last_of(DirectorySeparator) + 1;
     std::string::size_type posExtension = inFilePathName.find_last_of('.');
-    if (posExtension >= posName) {
+    if (posExtension != std::string::npos && posExtension >= posName) {
         if (outExtension != nullptr)
             *outExtension = inFilePathName.substr(posExtension);
     } else
@@ -41,22 +70,53 @@ void ExtractPathNameExtension(const std::string& inFilePathName, std::string* ou
         *outPath = inFilePathName.substr(0, posName - 1);
 }
 
+#if macOS && !defined(DEBUG)
+#define RedirectOutput 1
+#else
+#define RedirectOutput 0
+#endif
+
 static void InitDatasmith() {
+#if RedirectOutput
+    // Redirect outputs to file InitDatasmith.txt
+    int dupStdout = -1;
+    int dupStderr = -1;
+    int initDatasmithFile = open("InitDatasmith.txt", O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU | S_IRWXG | S_IRWXO);
+    if (initDatasmithFile != -1) {
+        dupStdout = dup(STDOUT_FILENO);
+        dupStderr = dup(STDERR_FILENO);
+        dup2(initDatasmithFile, STDOUT_FILENO);
+        dup2(initDatasmithFile, STDERR_FILENO);
+    }
+#endif
+
     TraceF("InitDatasmith\n");
     FDatasmithExporterManager::FInitOptions Options;
     Options.bSuppressLogs = true; // DEBUG == 0;
     FDatasmithExporterManager::Initialize(Options);
+
+#if RedirectOutput
+    // Restore outputs to standard streams
+    if (dupStdout != -1) {
+        dup2(dupStdout, STDOUT_FILENO);
+        close(dupStdout);
+    }
+    if (dupStderr != -1) {
+        dup2(dupStderr, STDERR_FILENO);
+        close(dupStderr);
+    }
+    if (initDatasmithFile != -1)
+        close(initDatasmithFile);
+#endif
 }
 
 int Convert(int argc, const utf8_t* argv[]) {
     int result = EXIT_FAILURE;
     try {
         InitDatasmith();
-        CVimToDatasmith vimToDatasmith;
+        CConvertVimToDatasmith vimToDatasmith;
         vimToDatasmith.GetParameters(argc, argv);
-        vimToDatasmith.ReadVimFile();
-        vimToDatasmith.CreateDatasmithScene();
-        vimToDatasmith.CreateDatasmithFile();
+        vimToDatasmith.Convert();
         CTaskMgr::DeleteMgr();
         result = EXIT_SUCCESS;
     } catch (const std::exception& e) {

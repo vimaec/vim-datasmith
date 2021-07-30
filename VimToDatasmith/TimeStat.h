@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "DebugTools.h"
 #include "VimToDsWarningsDisabler.h"
 
 namespace Vim2Ds {
@@ -9,29 +10,29 @@ namespace Vim2Ds {
 // Get cpu and real time
 class FTimeStat {
   public:
-    // Contructor (Get current process CPU time and real time)
-    FTimeStat() { ReStart(); }
-
-    // Copy Contructor
-    FTimeStat(const FTimeStat& InOther) {
-        CpuTime = InOther.CpuTime;
-        RealTime = InOther.RealTime;
-    }
-
     // Reset to current process CPU time and real time
-    void ReStart();
+    void BeginNow();
+
+    // Finish to current process CPU time and real time
+    void FinishNow();
 
     // Cumulate time from the other
     void AddDiff(const FTimeStat& InOther);
 
     // Print time differences
-    void PrintDiff(const char* InStatLabel, const FTimeStat& InStart);
+    void PrintTime(const char* InStatLabel, EP2DB inMsgLevel = kP2DB_Trace);
 
-    // Return the ReStart cpu time
-    double GetCpuTime() const { return CpuTime; }
+    // Return cpu time at BeginNow
+    double GetStartCpuTime() const { return mStartCpuTime; }
 
-    // Return the ReStart real time
-    double GetRealTime() const { return RealTime; }
+    // Return real time at BeginNow
+    double GetStartRealTime() const { return mStartRealTime; }
+
+    // Return elapsed cpu time
+    double GetCpuTime() const { return mFinishCpuTime - mStartCpuTime; }
+
+    // Return elapsed  real time
+    double GetRealTime() const;
 
     // Tool get current real time clock
     static double RealTimeClock();
@@ -40,9 +41,20 @@ class FTimeStat {
     static double CpuTimeClock();
 
   private:
-    // Time at the creation / ReStart of this object
-    double CpuTime;
-    double RealTime;
+    double mStartCpuTime = 0.0;
+    double mStartRealTime = 0.0;
+    double mFinishCpuTime = 0.0;
+    double mFinishRealTime = 0.0;
 };
+
+// Macro to measure code execution time
+#define MeasureTime(name, code, msgLevel)      \
+    {                                          \
+        FTimeStat name##Stat;                  \
+        name##Stat.BeginNow();                 \
+        code;                                  \
+        name##Stat.FinishNow();                \
+        name##Stat.PrintTime(#name, msgLevel); \
+    }
 
 } // namespace Vim2Ds

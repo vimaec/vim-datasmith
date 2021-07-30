@@ -60,6 +60,15 @@
     <ClCompile Include="..\VimToDatasmith\TimeStat.cpp">
       <Filter>VimToDatasmith</Filter>
     </ClCompile>
+    <ClCompile Include="..\VimToDatasmith\CGeometryEntry.cpp">
+      <Filter>VimToDatasmith</Filter>
+    </ClCompile>
+    <ClCompile Include="..\VimToDatasmith\CConvertVimToDatasmith.cpp">
+      <Filter>VimToDatasmith</Filter>
+    </ClCompile>
+    <ClCompile Include="..\VimToDatasmith\CVimImported.cpp">
+      <Filter>VimToDatasmith</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\VimToDatasmith\CVimToDatasmith.h">
@@ -120,6 +129,33 @@
       <Filter>VimToDatasmith</Filter>
     </ClInclude>
     <ClInclude Include="..\VimToDatasmith\TimeStat.h">
+      <Filter>VimToDatasmith</Filter>
+    </ClInclude>
+    <ClInclude Include="..\VimToDatasmith\CActorEntry.h">
+      <Filter>VimToDatasmith</Filter>
+    </ClInclude>
+    <ClInclude Include="..\VimToDatasmith\CGeometryEntry.h">
+      <Filter>VimToDatasmith</Filter>
+    </ClInclude>
+    <ClInclude Include="..\VimToDatasmith\CMaterialEntry.h">
+      <Filter>VimToDatasmith</Filter>
+    </ClInclude>
+    <ClInclude Include="..\VimToDatasmith\CMeshDefinition.h">
+      <Filter>VimToDatasmith</Filter>
+    </ClInclude>
+    <ClInclude Include="..\VimToDatasmith\CMeshElement.h">
+      <Filter>VimToDatasmith</Filter>
+    </ClInclude>
+    <ClInclude Include="..\VimToDatasmith\CTextureEntry.h">
+      <Filter>VimToDatasmith</Filter>
+    </ClInclude>
+    <ClInclude Include="..\VimToDatasmith\CMD5Hash.h">
+      <Filter>VimToDatasmith</Filter>
+    </ClInclude>
+    <ClInclude Include="..\VimToDatasmith\CConvertVimToDatasmith.h">
+      <Filter>VimToDatasmith</Filter>
+    </ClInclude>
+    <ClInclude Include="..\VimToDatasmith\CVimImported.h">
       <Filter>VimToDatasmith</Filter>
     </ClInclude>
   </ItemGroup>

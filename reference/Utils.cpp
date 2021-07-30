@@ -20,7 +20,7 @@ namespace Utils
 
 #ifndef __clang__
             FILE* file = nullptr;
-            if (fopen_s(&file, fileName.c_str(), "wb") != 0)
+            if (fopen_s(&file, fileName.c_str(), "rb") != 0)
                 file = nullptr;
 #else
             FILE* file = fopen(fileName.c_str(), "rb");

@@ -13,10 +13,15 @@ namespace Vim2Ds {
 
 typedef enum { kP2DB_Report = 1, kP2DB_Debug, kP2DB_ReportAndDebug, kP2DB_Trace, kP2DB_Verbose } EP2DB;
 
+EP2DB SetPrintLevel(EP2DB inLevel);
+
 void Printf2DB(EP2DB InMsgLevel, const utf8_t* FormatString, ...) __printflike(2, 3);
 
 // Write string to log file
 void Write2Log(EP2DB InMsgLevel, const utf8_string& InMsg);
+
+// Abnormal end to the program
+[[noreturn]] void Abort();
 
 [[noreturn]] void ThrowMessage(const utf8_t* MessageFormatString, ...);
 [[noreturn]] void ThrowPtrNull(const utf8_t* InFile, int InLineNo);
@@ -59,6 +64,13 @@ void Write2Log(EP2DB InMsgLevel, const utf8_string& InMsg);
 #define TestAssertDebugOnly(...) (void)0
 #endif
 
+#define FatalF(...)                                          \
+    {                                                        \
+        Vim2Ds::Printf2DB(Vim2Ds::kP2DB_Debug, __VA_ARGS__); \
+        Vim2Ds::Abort();                                     \
+    }
+
+#define ReportF(...) Vim2Ds::Printf2DB(Vim2Ds::kP2DB_Report, __VA_ARGS__)
 #define DebugF(...) Vim2Ds::Printf2DB(Vim2Ds::kP2DB_Debug, __VA_ARGS__)
 #define TraceF(...) Vim2Ds::Printf2DB(Vim2Ds::kP2DB_Trace, __VA_ARGS__)
 #if 0
