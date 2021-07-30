@@ -207,6 +207,10 @@ void CVimToDatasmith::CGeometryEntry::CreateActor(NodeIndex inInstance) {
     FTransform actorTransfo(ToFTransform((*mVimToDatasmith->mVim.mInstancesTransform)[inInstance]));
 
     // Compute the actor name
+    /* 1st Datasmith name are id (must be unique) while label is what is view by the user.
+       2nd Ideally (for Datasmith reimport mechanism), name(id) must be unique and permanent (same for import and reimport).
+       Vim file doesn't seem to provide id with these qualities.
+       So to have a quasi permanent id - I based them on the content (mesh hash, mesh element hash, actor transformation) */
     Datasmith::FDatasmithHash hasher;
     hasher.HashQuat(actorTransfo.GetRotation());
     hasher.HashFixVector(actorTransfo.GetTranslation());

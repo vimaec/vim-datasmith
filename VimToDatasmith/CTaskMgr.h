@@ -98,7 +98,7 @@ class CTaskMgr {
     volatile bool mTerminate = false;
 
     // False: tasks to run in main threads, true: Task run in thread
-    bool mTreadingEnabled;
+    bool mThreadingEnabled;
 };
 
 // Lightweight task synchronization mechanism

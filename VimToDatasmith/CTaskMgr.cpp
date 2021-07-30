@@ -47,8 +47,8 @@ void CTaskMgr::DeleteMgr() {
 
 // Constructor
 CTaskMgr::CTaskMgr()
-: mTreadingEnabled(true) {
-    if (mTreadingEnabled) {
+: mThreadingEnabled(true) {
+    if (mThreadingEnabled) {
         // One thread by processor
         mNbProcessors = std::thread::hardware_concurrency();
         if (mNbProcessors == 0) {
@@ -83,7 +83,7 @@ CTaskMgr::~CTaskMgr() {
 
 // Add task
 void CTaskMgr::AddTask(ITask* inTask) {
-    if (mTreadingEnabled) {
+    if (mThreadingEnabled) {
         // Add the task to the queue
         {
             std::unique_lock<std::mutex> lk(mAccessControl);

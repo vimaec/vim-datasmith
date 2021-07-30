@@ -196,7 +196,7 @@ void CVimImported::ConvertObsoleteSceneNode() {
                 ParentIndex mParent;
                 GeometryIndex mGeometry;
                 int mInstance; // Never used
-                float mTransform[16];
+                cMat4 mTransform;
             };
             NodeIndex instancesCount = NodeIndex(buffer.data.size() / sizeof(CObsoleteSceneNode));
             TestAssert(instancesCount * sizeof(CObsoleteSceneNode) == buffer.data.size());
@@ -206,7 +206,7 @@ void CVimImported::ConvertObsoleteSceneNode() {
 
             const CObsoleteSceneNode* nodes = reinterpret_cast<const CObsoleteSceneNode*>(buffer.data.begin());
             for (NodeIndex i = NodeIndex(0); i < instancesCount; i = NodeIndex(i + 1)) {
-                (*mInstancesTransform)[i] = *reinterpret_cast<const cMat4*>(nodes->mTransform);
+                (*mInstancesTransform)[i] = nodes->mTransform;
                 (*mInstancesParent)[i] = nodes->mParent;
                 (*mInstancesSubgeometry)[i] = nodes->mGeometry;
                 ++nodes;

@@ -14,7 +14,7 @@ DISABLE_SDK_WARNINGS_END
 
 namespace Vim2Ds {
 
-// Minimal class to encapsulate UE MD5 for use as std key
+// Minimal class to encapsulate UE MD5 for use as std::unordered_map key
 class CMD5Hash {
   public:
     CMD5Hash() {
@@ -22,7 +22,7 @@ class CMD5Hash {
         m[1] = 0;
     }
 
-    CMD5Hash(size_t v1, size_t v2) {
+    CMD5Hash(uint64_t v1, uint64_t v2) {
         m[0] = v1;
         m[1] = v2;
     }
@@ -31,18 +31,18 @@ class CMD5Hash {
 
     CMD5Hash(FMD5* inMD5) { inMD5->Final(reinterpret_cast<uint8*>(m)); }
 
-    CMD5Hash CombineWith(const CMD5Hash& inOther) { return CMD5Hash(m[0] ^ inOther.m[0], m[1] ^ inOther.m[1]); }
+    CMD5Hash CombineWith(const CMD5Hash& inOther) const { return CMD5Hash(m[0] ^ inOther.m[0], m[1] ^ inOther.m[1]); }
 
     FString ToString() const { return ((const FGuid*)m)->ToString(); }
 
     bool operator==(const CMD5Hash& inOther) const { return m[0] == inOther.m[0] && m[1] == inOther.m[1]; }
 
     struct SHasher {
-        std::size_t operator()(const CMD5Hash& v) const { return v.m[0] ^ v.m[1]; }
+        uint64_t operator()(const CMD5Hash& v) const { return v.m[0] ^ v.m[1]; }
     };
 
   private:
-    size_t m[2];
+    uint64_t m[2];
 };
 
 } // namespace Vim2Ds
