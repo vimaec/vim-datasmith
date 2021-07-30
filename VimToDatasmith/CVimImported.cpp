@@ -10,6 +10,7 @@ namespace Vim2Ds {
 static const std::vector<int> mEmptyIntVector;
 static const std::vector<double> mEmptyDoubleVector;
 
+// Access table column (return an empty array if column isn't absent)
 const std::vector<int>& GetIndexColumn(const Vim::EntityTable& inTable, const std::string& inColumnName) {
     auto iterator = inTable.mIndexColumns.find(inColumnName);
     if (iterator == inTable.mIndexColumns.end())
@@ -17,6 +18,7 @@ const std::vector<int>& GetIndexColumn(const Vim::EntityTable& inTable, const st
     return iterator->second;
 }
 
+// Access table column (return an empty array if column isn't absent)
 const std::vector<StringIndex>& GetStringsColumn(const Vim::EntityTable& inTable, const std::string& inColumnName) {
     auto iterator = inTable.mStringColumns.find(inColumnName);
     if (iterator == inTable.mStringColumns.end())
@@ -24,6 +26,7 @@ const std::vector<StringIndex>& GetStringsColumn(const Vim::EntityTable& inTable
     return reinterpret_cast<const std::vector<StringIndex>&>(iterator->second);
 }
 
+// Access table column (return an empty array if column isn't absent)
 const std::vector<double>& GetNumericsColumn(const Vim::EntityTable& inTable, const std::string& inColumnName) {
     auto iterator = inTable.mNumericColumns.find(inColumnName);
     if (iterator == inTable.mNumericColumns.end())
@@ -31,19 +34,18 @@ const std::vector<double>& GetNumericsColumn(const Vim::EntityTable& inTable, co
     return iterator->second;
 }
 
+// Access an entities table (throw if table is absent)
 const Vim::EntityTable& CVimImported::GetEntitiesTable(const std::string& inEntityName) const {
     auto iterator = mVimScene.mEntityTables.find(inEntityName);
     TestAssert(iterator != mVimScene.mEntityTables.end());
     return iterator->second;
 }
 
-// Initialize the Vim scene with the vim file
+// Read the vim scene
 void CVimImported::Read(const utf8_string& inVimFileName) {
-    mReadTimeStat.BeginNow();
     Vim::VimErrorCodes vimReadResult = mVimScene.ReadFile(inVimFileName);
     if (vimReadResult != Vim::VimErrorCodes::Success)
         ThrowMessage("CVimImported::ReadVimFile - ReadFile return error %d", vimReadResult);
-    mReadTimeStat.FinishNow();
 #if 0
     DumpAssets();
 #endif
@@ -52,6 +54,7 @@ void CVimImported::Read(const utf8_string& inVimFileName) {
 #endif
 }
 
+// Fetch specific scene data
 void CVimImported::Prepare() {
     VerboseF("CVimImported::Prepare\n");
 

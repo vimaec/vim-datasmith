@@ -19,6 +19,7 @@ DISABLE_SDK_WARNINGS_END
 
 namespace Vim2Ds {
 
+// Convert vim matrix to Unreal Engine tranformation
 FTransform ToFTransform(const cMat4& inMat) {
     cQuat quat;
     quat.FromMat4(inMat);
@@ -115,15 +116,15 @@ void CVimToDatasmith::CGeometryEntry::ConvertGeometryToDatasmithMesh(FDatasmithM
     }
 }
 
+// Process the node's geometry (create datasmith mesh)
 void CVimToDatasmith::CGeometryEntry::Run() {
-    if ((*mVimToDatasmith->mVim.mInstancesTransform)[mDefinition].IsIdentity()) {
-    }
-
     FDatasmithMesh datasmithMesh;
     MapVimMaterialIdToDsMeshMaterialIndice vimMaterialIdToDsMeshMaterialIndice;
     ConvertGeometryToDatasmithMesh(&datasmithMesh, &vimMaterialIdToDsMeshMaterialIndice);
 
+    // If material list isn't empty -> We have at least 1 face
     if (!vimMaterialIdToDsMeshMaterialIndice.empty()) {
+        // Create an mesh id based on mesh content
         Datasmith::FDatasmithHash meshHasher;
         meshHasher.ComputeDatasmithMeshHash(datasmithMesh);
         FMD5Hash meshHash = meshHasher.GetHashValue();
@@ -133,6 +134,7 @@ void CVimToDatasmith::CGeometryEntry::Run() {
         bool isNewDefinition = false;
         CMeshDefinition* meshDefinition = nullptr;
         {
+            // Find an already existing or try to add a new one
             std::unique_lock<std::mutex> lk(mVimToDatasmith->mDefinitionsAccessControl);
             auto insertResult = mVimToDatasmith->mMeshDefinitions.insert({meshMD5Hash, std::unique_ptr<CMeshDefinition>()});
             if (insertResult.second) {
@@ -142,13 +144,15 @@ void CVimToDatasmith::CGeometryEntry::Run() {
             meshDefinition = insertResult.first->second.get();
         }
         if (isNewDefinition) {
+            // We are the first, so we initialize the definition
             datasmithMesh.SetName(*LexToString(meshHash));
             mMeshElement = meshDefinition->Initialize(datasmithMesh, vimMaterialIdToDsMeshMaterialIndice, *mVimToDatasmith);
-        } else
+        } else // We are a new element of this definition
             mMeshElement = meshDefinition->GetOrCreateMeshElement(vimMaterialIdToDsMeshMaterialIndice, *mVimToDatasmith);
     }
 }
 
+// We add instance -> IDatasmithHierarchicalInstancedStaticMeshActorElement
 void CVimToDatasmith::CGeometryEntry::AddInstance(NodeIndex inInstance) {
     if (mInstances == nullptr)
         mInstances.reset(new std::vector<NodeIndex>{inInstance});
@@ -180,6 +184,7 @@ FString CVimToDatasmith::CGeometryEntry::HashToName(Datasmith::FDatasmithHash& h
     return actorName;
 }
 
+// Finalize actor initialization and add it to the scene
 void CVimToDatasmith::CGeometryEntry::AddActor(const TSharedRef<IDatasmithMeshActorElement>& inActor, NodeIndex inInstance) {
     inActor->SetStaticMeshPathName(mMeshElement->GetMeshElement(*mVimToDatasmith)->GetName());
 
@@ -256,6 +261,7 @@ void CVimToDatasmith::CGeometryEntry::CreateHierarchicalInstancesActor() {
     AddActor(hierarchicalMeshActor, mDefinition);
 }
 
+// Creat all actor using this geometry
 void CVimToDatasmith::CGeometryEntry::CreateActors() {
     const IDatasmithMeshElement* meshElement = mMeshElement != nullptr ? mMeshElement->GetMeshElement(*mVimToDatasmith) : nullptr;
     if (meshElement != nullptr) {

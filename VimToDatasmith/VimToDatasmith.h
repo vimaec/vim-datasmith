@@ -46,6 +46,9 @@ void ExtractPathNameExtension(const utf8_string& inFilePathName, utf8_string* ou
 // Convert function
 int Convert(int argc, const utf8_t* argv[]);
 
+//Simple function to create a folder
+bool CreateFolder(const utf8_t* inFolderName);
+
 // Simple tool to convert data to it's text representation
 #define ToUtf8(v) ToString(v).c_str()
 

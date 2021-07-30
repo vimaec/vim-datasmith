@@ -21,7 +21,33 @@ DISABLE_SDK_WARNINGS_END
 #define DirectorySeparator '/'
 #endif
 
+#if winOS
+extern "C" {
+// Sometime it's hard to include "windows.h'" headers.
+bool CreateDirectoryW(wchar_t* lpPathName, void* lpSecurityAttributes);
+}
+#endif
+
 namespace Vim2Ds {
+
+// Simple function to create a folder
+bool CreateFolder(const utf8_t* inFolderName) {
+    struct stat st = {0};
+    if (stat(inFolderName, &st) == -1) {
+#if winOS
+        if (CreateDirectoryW(UTF8_TO_TCHAR(inFolderName), nullptr) != true) {
+            DebugF("CreateFolder - Can't create folder: \"%s\" error=%d\n", inFolderName, errno);
+            return false;
+        }
+#else
+        if (mkdir(inFolderName, S_IRWXU | S_IRWXG | S_IRWXO) != 0) {
+            DebugF("CreateFolder - Can't create folder: \"%s\" error=%d\n", inFolderName, errno);
+            return false;
+        }
+#endif
+    }
+    return true;
+}
 
 void Usage() {
     DebugF("Usage: VimToDatasmith [-NoHierarchicalInstance] VimFilePath.vim [DatasmithFilePath.udatasmith]");

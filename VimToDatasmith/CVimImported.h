@@ -20,22 +20,29 @@ class CVimImported {
   public:
     CVimImported() {}
 
+    // Read the vim scene
     void Read(const utf8_string& inVimFileName);
+
+    // Fetch specific scene data
     void Prepare();
 
+    // Return string by it's StringIndex
     const utf8_t* GetString(StringIndex inIndex) const {
         TestAssert(inIndex < mVimScene.mStrings.size());
         return reinterpret_cast<const utf8_t*>(mVimScene.mStrings[inIndex]);
     }
 
+    // Return string by it's index in a StringIndex array
     const utf8_t* GetString(const std::vector<StringIndex>& inStringIndex, size_t inIndex) const {
         if (inIndex >= inStringIndex.size())
             return "";
         return GetString(inStringIndex[inIndex]);
     }
 
+    // Get the assets buffer (... list of textures ...)
     const bfast::vector<bfast::Buffer>& GetAssetsBuffer() const { return mVimScene.mAssetsBFast.buffers; }
 
+    // Access an entities table (throw if table is absent)
     const Vim::EntityTable& GetEntitiesTable(const std::string& inEntityName) const;
 
     // Readed scene data
@@ -54,8 +61,6 @@ class CVimImported {
     // Working/Computed data
     TAllocatedVector<IndiceIndex, GeometryIndex> mGroupIndexCounts;
     TAllocatedVector<cVec3, VertexIndex> mNormals;
-
-    FTimeStat mReadTimeStat;
 
     // For data exploration
     void DumpStringColumn(const utf8_t* inTableName, const utf8_t* inColumnName, const std::vector<int>& inColumn) const;
@@ -84,6 +89,7 @@ class CVimImported {
     TAttributeVector<float> mVertexUVs;
 };
 
+// Access table column (return an empty array if column isn't absent)
 const std::vector<int>& GetIndexColumn(const Vim::EntityTable& inTable, const std::string& inColumnName);
 const std::vector<StringIndex>& GetStringsColumn(const Vim::EntityTable& inTable, const std::string& inColumnName);
 const std::vector<double>& GetNumericsColumn(const Vim::EntityTable& inTable, const std::string& inColumnName);

@@ -21,7 +21,7 @@ class CVimToDatasmith::CMeshDefinition {
     // Constructor
     CMeshDefinition() {}
 
-    // Initialize the mesh
+    // Initialize the mesh (Create it's file in the assets folder)
     CMeshElement* Initialize(FDatasmithMesh& inMesh, const MapVimMaterialIdToDsMeshMaterialIndice& inVimMaterialIdToDsMeshMaterialIndice,
                              CVimToDatasmith& inVimToDatasmith) {
         TCHAR SubDir1[2] = {inMesh.GetName()[0], 0};
@@ -73,6 +73,7 @@ class CVimToDatasmith::CMeshDefinition {
     std::unordered_map<CMD5Hash, std::unique_ptr<CMeshElement>, CMD5Hash::SHasher> mMapMaterialMD5ToMeshElement;
 };
 
+// We define this function here to solve cross depedencies CMeshElement & CMeshDefinition
 inline const CVimToDatasmith::CMeshElement* CVimToDatasmith::CMeshElement::GetFirstElement() const {
     return mMeshDefinition.GetFirstElement();
 }

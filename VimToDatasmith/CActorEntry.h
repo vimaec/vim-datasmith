@@ -6,7 +6,7 @@
 
 namespace Vim2Ds {
 
-// Material's collected informations
+// CActorEntry connect vim instance to Datasmith
 class CVimToDatasmith::CActorEntry {
   public:
     CActorEntry() {}
@@ -33,8 +33,6 @@ class CVimToDatasmith::CActorEntry {
         }
         return *mMetaDataElement;
     }
-
-    void AddTag(const utf8_t* inTag, std::vector<int>& inVector, ElementIndex inIndex);
 
   private:
     TSharedPtr<IDatasmithActorElement> mActorElement;

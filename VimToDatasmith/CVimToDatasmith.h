@@ -71,6 +71,7 @@ class CVimToDatasmith {
     void CreateMaterials();
 
   private:
+    // Get or create a texture entry
     CTextureEntry* CreateTexture(const utf8_t* inTextureName);
 
     // Create all definitions

@@ -21,8 +21,10 @@ class CVimToDatasmith::CGeometryEntry : CTaskMgr::ITask {
     // Process the node's geometry (create datasmith mesh)
     void Run();
 
+    // Convert geometry to Datasmith Mesh
     void ConvertGeometryToDatasmithMesh(FDatasmithMesh* outMesh, MapVimMaterialIdToDsMeshMaterialIndice* outVimMaterialIdToDsMeshMaterialIndice);
 
+    // Finalize actor initialization and add it to the scene
     void AddActor(const TSharedRef<IDatasmithMeshActorElement>& inActor, NodeIndex inInstance);
 
     // Create an actor for the specified node

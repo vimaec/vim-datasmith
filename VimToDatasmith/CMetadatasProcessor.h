@@ -5,8 +5,10 @@
 
 namespace Vim2Ds {
 
+// Class distribut on threads the actor's metadata settings
 class CVimToDatasmith::CMetadatasProcessor {
   public:
+    // Constructor
     CMetadatasProcessor(CVimToDatasmith* inVimTodatasmith)
     : mVimTodatasmith(inVimTodatasmith)
     , mProperties(inVimTodatasmith->mVim.GetEntitiesTable("table:Rvt.Element").mProperties) {
@@ -14,6 +16,7 @@ class CVimToDatasmith::CMetadatasProcessor {
         mEnd = mStart + mProperties.size();
     }
 
+    // Process all
     void Process() {
         CTaskMgr::CTaskJointer createAllMetaDatas("CreateAllMetaDatas");
         for (unsigned i = 0; i < CTaskMgr::Get().GetNbProcessors(); ++i)
@@ -22,6 +25,7 @@ class CVimToDatasmith::CMetadatasProcessor {
     }
 
   private:
+    // Process one actor at a time
     void Proceed() {
         const Vim::SerializableProperty* start;
         const Vim::SerializableProperty* end;
@@ -39,6 +43,7 @@ class CVimToDatasmith::CMetadatasProcessor {
         }
     }
 
+    // Get the next actor to process
     CVimToDatasmith::CActorEntry* GetObject(const Vim::SerializableProperty** outStart, const Vim::SerializableProperty** outEnd) {
         std::unique_lock<std::mutex> lk(mAccessControl);
         while (mStart < mEnd) {

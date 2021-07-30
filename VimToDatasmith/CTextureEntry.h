@@ -4,36 +4,12 @@
 #include "CConvertVimToDatasmith.h"
 #include "CVimToDatasmith.h"
 
-
-#if winOS
-extern "C" {
-    bool CreateDirectoryW(wchar_t* lpPathName, void* lpSecurityAttributes);
-}
-#endif
-
 namespace Vim2Ds {
-
-inline bool CreateFolder(const utf8_t* inFolderName) {
-    struct stat st = {0};
-    if (stat(inFolderName, &st) == -1) {
-#if winOS
-        if (CreateDirectoryW(UTF8_TO_TCHAR(inFolderName), nullptr) != true) {
-            DebugF("CreateFolder - Can't create folder: \"%s\" error=%d\n", inFolderName, errno);
-            return false;
-        }
-#else
-        if (mkdir(inFolderName, S_IRWXU | S_IRWXG | S_IRWXO) != 0) {
-            DebugF("CreateFolder - Can't create folder: \"%s\" error=%d\n", inFolderName, errno);
-            return false;
-        }
-#endif
-    }
-    return true;
-}
 
 // Material's collected informations
 class CVimToDatasmith::CTextureEntry {
   public:
+    // Constructor
     CTextureEntry(CVimToDatasmith* inVimToDatasmith, const bfast::Buffer& inImageBuffer)
     : mVimToDatasmith(inVimToDatasmith)
     , mImageBuffer(inImageBuffer) {
@@ -49,6 +25,7 @@ class CVimToDatasmith::CTextureEntry {
 
     const TCHAR* GetLabel() const { return *mDatasmithLabel; }
 
+    // Copy the texture in the asset texture's folder
     void CopyTextureInAssets() {
         if (!CreateFolder(TCHAR_TO_UTF8(*mVimToDatasmith->mConverter.GetOutputPath())))
             return;
@@ -81,6 +58,7 @@ class CVimToDatasmith::CTextureEntry {
                    errno);
     }
 
+    // Add a texture element to the scne
     void AddToScene() {
         if (!mDatasmithTexture.IsValid()) {
             CopyTextureInAssets();
@@ -93,15 +71,12 @@ class CVimToDatasmith::CTextureEntry {
                 if (strcmp(extension, ".jpg") == 0)
                     fmt = EDatasmithTextureFormat::JPEG;
             }
-#if 1
+
             FString filePathName = mVimToDatasmith->mConverter.GetOutputPath() + TEXT("/Textures/") + mDatasmithName;
             filePathName += UTF8_TO_TCHAR(extension);
             mDatasmithTexture->SetFile(*filePathName);
             FMD5Hash FileHash = FMD5Hash::HashFile(mDatasmithTexture->GetFile());
             mDatasmithTexture->SetFileHash(FileHash);
-#else
-            mDatasmithTexture->SetData(mImageBuffer.data.begin(), uint32(mImageBuffer.data.size()), fmt);
-#endif
 
             mDatasmithTexture->SetLabel(*mDatasmithLabel);
             mDatasmithTexture->SetSRGB(EDatasmithColorSpace::sRGB);

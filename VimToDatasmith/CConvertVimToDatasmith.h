@@ -27,23 +27,23 @@ class CConvertVimToDatasmith {
     // Parse parameters to get Vim file path and datasmith file path
     void GetParameters(int argc, const utf8_t* const* argv);
 
+    // All the work is done here
     void Convert();
 
+    // Accessors
     CVimImported& GetVim() const { return *mVim; }
-
     CVimToDatasmith& GetDatasmith() const { return *mVimTodatasmith; }
-
     const TSharedPtr<IDatasmithScene>& GetScene() const { return mDatasmithScene; }
     std::mutex& GetSceneAccess() { return mDatasmithSceneAccessControl; }
 
     const FString& GetOutputPath() const { return mOutputPath; }
-
     bool GetNoHierarchicalInstance() const { return mNoHierarchicalInstance; }
 
     FTimeStat mBuildMetaDataTimeStat;
     FTimeStat mBuildTagsTimeStat;
 
   private:
+    // Main steps of the conversion
     void CreateScene();
     void ReadVimFile();
     void Validate();
@@ -64,6 +64,7 @@ class CConvertVimToDatasmith {
     TSharedPtr<IDatasmithScene> mDatasmithScene;
     std::mutex mDatasmithSceneAccessControl;
 
+    // Statistics for different components
     FTimeStat mTotalTimeStat;
     FTimeStat mVimLoadStat;
     FTimeStat mVimPrepareStat;

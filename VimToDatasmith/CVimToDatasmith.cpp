@@ -22,6 +22,7 @@ CVimToDatasmith::CVimToDatasmith(CConvertVimToDatasmith* inConvertVimToDatasmith
 CVimToDatasmith::~CVimToDatasmith() {
 }
 
+// Get or create a texture entry
 CVimToDatasmith::CTextureEntry* CVimToDatasmith::CreateTexture(const utf8_t* inTextureName) {
     static const utf8_t texturePrefix[] = "textures\\";
     size_t l = strlen(texturePrefix);
@@ -116,7 +117,7 @@ void CVimToDatasmith::CreateMaterials() {
 
 void CVimToDatasmith::CreateAllMetaDatas() {
     mConverter.mBuildMetaDataTimeStat.BeginNow();
-#if 1
+#if 1 // Threaded version retained
     CMetadatasProcessor(this).Process();
 #else
     Vim::EntityTable& elementTable = mVimScene.mEntityTables["table:Rvt.Element"];

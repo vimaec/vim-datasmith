@@ -60,6 +60,7 @@ class CVimToDatasmith::CMeshElement {
         }
     }
 
+    // We define this function atd the end CMeshDefinition.h to solve cross depedencies
     inline const CMeshElement* GetFirstElement() const; // mMeshDefinition.GetFirstElement()
 
     // Return the mesh element (may create it)

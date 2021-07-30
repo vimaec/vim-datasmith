@@ -14,6 +14,7 @@ DISABLE_SDK_WARNINGS_END
 
 namespace Vim2Ds {
 
+// Minimal class to encapsulate UE MD5 for use as std key
 class CMD5Hash {
   public:
     CMD5Hash() {
