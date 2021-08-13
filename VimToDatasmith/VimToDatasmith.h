@@ -79,7 +79,7 @@ inline float sqr(float inValue) {
 // To convert from Vim meters to UE centimeter units
 extern const float Meter2Centimeter;
 
-// Here are all VIM index. Use of emum to get some type checking
+// Here are all VIM index. Use of enum to get some type checking
 enum ElementIndex : uint32_t { kNoElement = (uint32_t)-1 };
 enum NodeIndex : uint32_t { kNoNode = (uint32_t)-1 };
 enum GeometryIndex : uint32_t { kNoGeometry = (uint32_t)-1 };

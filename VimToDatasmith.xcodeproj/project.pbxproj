@@ -37,6 +37,7 @@
 		020013F4269CA8DF00D6C8A5 /* VimToDatasmith */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = VimToDatasmith; sourceTree = BUILT_PRODUCTS_DIR; };
 		02069DE626A1F8F2008861BA /* .clang-format */ = {isa = PBXFileReference; lastKnownFileType = text; path = ".clang-format"; sourceTree = "<group>"; };
 		02069DE726A1F925008861BA /* clangformat.command */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = clangformat.command; sourceTree = "<group>"; };
+		0211B82526C6B19D008075A8 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		022F3652269CB96500623F93 /* DebugTools.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DebugTools.cpp; sourceTree = "<group>"; };
 		022F3653269CB96500623F93 /* DebugTools.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DebugTools.h; sourceTree = "<group>"; };
 		0230D8C3269CA9EF00EE9AD6 /* VimToDsWarningsDisabler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VimToDsWarningsDisabler.h; sourceTree = "<group>"; };
@@ -59,6 +60,7 @@
 		0230D8DF269CA9F000EE9AD6 /* VimToDatasmith.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VimToDatasmith.cpp; sourceTree = "<group>"; };
 		0230D8E0269CA9F000EE9AD6 /* VimToDatasmith.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VimToDatasmith.h; sourceTree = "<group>"; };
 		0230D8E1269CA9F000EE9AD6 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		025F757F26C6DCD600C34DDF /* Documentation */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Documentation; sourceTree = "<group>"; };
 		0276C33626A383C5005A9769 /* DatasmithHashTools.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DatasmithHashTools.cpp; sourceTree = "<group>"; };
 		0276C33726A383C5005A9769 /* DatasmithHashTools.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DatasmithHashTools.h; sourceTree = "<group>"; };
 		0276C33D26A5D079005A9769 /* DatasmithSceneValidator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DatasmithSceneValidator.h; sourceTree = "<group>"; };
@@ -105,12 +107,14 @@
 		020013EB269CA8DF00D6C8A5 = {
 			isa = PBXGroup;
 			children = (
+				0211B82526C6B19D008075A8 /* README.md */,
 				0230D8C6269CA9F000EE9AD6 /* reference */,
 				0230D8C2269CA9EF00EE9AD6 /* Settings */,
 				0230D8D6269CA9F000EE9AD6 /* Vim */,
 				0276C33C26A5D079005A9769 /* UnrealEngine */,
 				0230D8DD269CA9F000EE9AD6 /* VimToDatasmith */,
 				020013F5269CA8DF00D6C8A5 /* Products */,
+				025F757F26C6DCD600C34DDF /* Documentation */,
 				02E14367269F054800856873 /* DatasmithSDK */,
 			);
 			sourceTree = "<group>";
