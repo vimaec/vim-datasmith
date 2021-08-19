@@ -1,0 +1,46 @@
+%%mocodo
+
+IDatasmithMeshActorElement: Mesh Element Hash + Position Hash + Collision number Hash, Label=Vim Element Name
+:
+IDatasmithHierarchicalInstancedStaticMeshActorElement: Mesh Element Hash + Position Hash + Collision number Hash, Label=first instance's Vim Element Name
+
+CREATE SINGLE ACTOR, 0N CGeometryEntry, 11 IDatasmithMeshActorElement, 01 [XOR] VimNode : NodeIndex
+VimNode: NodeIndex
+CREATE HIERARCHICAL ACTOR, 01 [Instances] CGeometryEntry, 2N IDatasmithHierarchicalInstancedStaticMeshActorElement, 01 [XOR] VimNode : Transform*
+
+:
+
+:
+
+DEFINE, 01 [First instance] VimNode, 11 CGeometryEntry: GeometryIndex
+:
+INSTANCIATE, 11 VimNode, 1N CGeometryEntry: NodeIndex
+
+
+CGeometryEntry: GeometryIndex, NodeIndex:First Instance, NodeIndexArray:Instances
+
+DEFINE MESH ELEMENT, 11 CGeometryEntry, 1N CMeshElement, 1N FDatasmithMesh, 11 MaterialsArray:
+
+:
+MaterialsArray: MaterialsArray Hash
+CMeshElement: VimMaterialToDatasmith hash, MaterialsArray
+FDatasmithMesh: FDatasmithMesh hash
+:
+
+::
+DEFINE MESH, 11 FDatasmithMesh, 11 CMeshDefinition, 11 [First Element] CMeshElement
+
+Vim Material To Datasmith Material, 1N MaterialsArray, 1N CMaterialEntry: MaterialID, Mesh Material Index
+CREATE DATASMITH MESH, 11 CMeshElement, 11 IDatasmithMeshElement, 11 MaterialsArray, 1N CMeshDefinition: FDatasmithMesh hash, MaterialsArray Hash
+CMeshDefinition: FDatasmithMesh hash
+
+CMaterialEntry: MaterialID, Label=Vim Material Name, IDatasmithUEPbrMaterialElement
+IDatasmithMeshElement: FDatasmithMesh hash + MaterialsArray Hash, Label=
+DATASMITH ASSETS, 11 DatasmithMeshAsset, 11 CMeshDefinition: FDatasmithMesh hash
+
+USE TEXTURE, 01 CMaterialEntry, 1N CTextureEntry: Texture File Name
+:
+DatasmithMeshAsset: FDatasmithMesh hash + .udsmesh
+
+CTextureEntry: Texture Hash, Label=Texture File Name, IDatasmithTextureElement
+::
